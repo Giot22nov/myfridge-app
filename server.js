@@ -6,14 +6,14 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // DATI INIZIALI (Simuliamo il tuo frigo del video)
-let frigo = [
-    { id: 1, nome: "Latte Granarolo", quantita: "1 L", scadenza: "2026-02-20", rimasto: 40 },
-    { id: 2, nome: "Riso Basmati", quantita: "1 Kg", scadenza: "2026-03-15", rimasto: 80 },
-    { id: 3, nome: "Uova", quantita: "6 pz", scadenza: "2026-02-18", rimasto: 100 }
-];
-let carrello = [
-    { id: 1, nome: "Carta Igienica", quantita: "1 pacco" }
-];
+// let frigo = [
+//    { id: 1, nome: "Latte Granarolo", quantita: "1 L", scadenza: "2026-02-20", rimasto: 40 },
+//    { id: 2, nome: "Riso Basmati", quantita: "1 Kg", scadenza: "2026-03-15", rimasto: 80 },
+//    { id: 3, nome: "Uova", quantita: "6 pz", scadenza: "2026-02-18", rimasto: 100 }
+// ];
+// let carrello = [
+//    { id: 1, nome: "Carta Igienica", quantita: "1 pacco" }
+//;
 
 // API
 app.get('/api/frigo', (req, res) => res.json(frigo));
