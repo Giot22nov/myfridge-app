@@ -1,0 +1,183 @@
+:root {
+    /* COLORI UFFICIALI STREAMLIT DARK THEME */
+    --bg-app: #0e1117;
+    --bg-card: #262730;
+    --text-main: #fafafa;
+    --text-sec: #97989c;
+    --primary: #ff4b4b; /* Rosso Streamlit */
+    --input-bg: #31333F;
+    --border: #41444C;
+    --success: #00d4b1; /* Verde/Teal Streamlit */
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    font-family: "Source Sans Pro", sans-serif;
+    margin: 0;
+    padding-bottom: 90px; /* Spazio per la nav bar */
+    padding-top: 60px;
+}
+
+/* HEADER */
+.st-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: var(--bg-app);
+    border-bottom: 1px solid var(--bg-card);
+    text-align: center;
+    padding: 15px 0;
+    z-index: 100;
+}
+.st-header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* CONTAINER */
+.st-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* CARDS (I blocchi grigi scuri del video) */
+.st-card {
+    background-color: var(--bg-card);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(250, 250, 250, 0.1);
+}
+
+.st-label {
+    font-size: 14px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* INPUT STYLE STREAMLIT */
+.st-input {
+    background-color: var(--bg-app); /* Input più scuri della card */
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    font-family: inherit;
+}
+.st-input:focus {
+    border-color: var(--primary);
+}
+
+.row { display: flex; gap: 10px; width: 100%; }
+
+/* BOTTONI STYLE STREAMLIT */
+.st-btn {
+    border: 1px solid rgba(255,255,255,0.2);
+    background-color: transparent;
+    color: var(--text-main);
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.st-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.st-btn.primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+}
+.st-btn.success {
+    background-color: var(--success);
+    color: black; /* Testo scuro su verde */
+    border: none;
+}
+.st-btn.danger {
+    background-color: transparent;
+    border: 1px solid #ff2b2b;
+    color: #ff2b2b;
+}
+.full-width { width: 100%; margin-top: 10px; }
+
+/* LISTA ELEMENTI */
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-card);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+.item-info strong { display: block; font-size: 1.1rem; }
+.item-info small { color: var(--text-sec); }
+
+/* SLIDER PERSONALIZZATO (Rosso) */
+input[type=range] {
+    width: 100%;
+    accent-color: var(--primary);
+    height: 4px;
+    margin-top: 10px;
+}
+
+/* DIVIDER */
+.st-divider {
+    height: 1px;
+    background-color: var(--border);
+    margin: 20px 0;
+}
+
+/* BOTTOM NAV (Clash Royale Style - Dark) */
+.st-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background-color: var(--bg-card); /* Grigio card */
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sec);
+    width: 25%;
+    height: 100%;
+    cursor: pointer;
+    border-top: 3px solid transparent; /* Per l'effetto selezione */
+}
+
+.nav-item.active {
+    color: var(--primary);
+    border-top: 3px solid var(--primary); /* Linea rossa sopra icona attiva */
+    background: linear-gradient(to bottom, rgba(255, 75, 75, 0.1), transparent);
+}
+
+.nav-item .material-icons-round {
+    font-size: 28px;
+    margin-bottom: 2px;
+}
+.nav-item span { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Nascondi viste */
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

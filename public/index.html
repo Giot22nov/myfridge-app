@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyFridge Dark</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS BASE --- */
+        :root {
+            --bg-body: #0e1117;
+            --bg-card: #262730;
+            --text-main: #ffffff;
+            --text-sec: #a3a8b8;
+            --accent: #ff4b4b; /* Rosso */
+            --success: #00d4b1; /* Verde Acqua */
+            --nav-bg: #1c1e26;
+            --input-bg: #31333F;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 90px; padding-top: 60px; }
+
+        /* HEADER */
+        .header { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(14,17,23,0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #333; z-index: 100; }
+        .header h1 { font-size: 18px; font-weight: 600; margin: 0; }
+
+        /* CONTAINER & CARDS */
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .card-title { font-size: 14px; color: var(--text-sec); margin-bottom: 12px; font-weight: 700; text-transform: uppercase; }
+
+        /* INPUTS & BTNS */
+        input { background: var(--input-bg); border: 1px solid #41444C; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; margin-bottom: 10px; outline: none; }
+        input:focus { border-color: var(--accent); }
+        .row { display: flex; gap: 10px; }
+        button { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-icon { width: auto; background: transparent; padding: 8px; color: var(--text-sec); }
+        .btn-delete { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border-radius: 50%; }
+        
+        /* BOTTONE SALVATAGGIO SLIDER */
+        .btn-save-slider { 
+            display: none; 
+            width: auto; padding: 5px 10px; 
+            background: #fff; color: #000; 
+            border-radius: 20px; font-size: 12px; margin-left: 10px;
+            animation: popIn 0.2s forwards;
+            border: 1px solid #ccc;
+        }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* FILTRI */
+        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; scrollbar-width: none; }
+        .chip { padding: 8px 16px; border-radius: 20px; background: #333; color: #aaa; border: 1px solid #444; font-size: 13px; white-space: nowrap; width: auto; transition: 0.2s; }
+        .chip.active { background: white; color: black; border-color: white; font-weight: 700; transform: scale(1.05); }
+
+        /* LISTA ITEM */
+        .item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid transparent; }
+        .item-info h3 { margin: 0 0 4px 0; font-size: 16px; }
+        .item-info p { margin: 0; color: var(--text-sec); font-size: 13px; }
+        .urgent { color: #ff4b4b; font-weight: bold; }
+
+        /* MODALE */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-box { background: var(--bg-card); width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: transparent; border: 1px solid #555; color: white; }
+        .btn-confirm { background: var(--accent); color: white; }
+
+        /* NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; transition: 0.3s; }
+        .nav-item.active { color: var(--accent); transform: translateY(-5px); }
+        .nav-item span { font-size: 28px; margin-bottom: 2px; }
+        .nav-item label { font-size: 10px; font-weight: 600; }
+        
+        .view { display: none; } .view.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* SLIDER STYLE */
+        /* Ho rimosso 'accent-color' fisso da qui */
+        input[type=range] { height: 4px; padding: 0; margin-top: 8px; cursor: grab; }
+        input[type=range]:active { cursor: grabbing; }
+    </style>
+</head>
+<body>
+
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modal-title" style="margin-top:0; color:white;">Confermi?</h3>
+            <p id="modal-text" style="color:#aaa;">L'azione è irreversibile.</p>
+            <div class="modal-btns">
+                <button onclick="closeModal()" class="btn-cancel">No</button>
+                <button onclick="confirmAction()" class="btn-confirm">Sì</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header"><h1 id="header-title">Il Mio Frigo</h1></div>
+
+    <div class="container">
+        <div id="view-frigo" class="view active">
+            <div class="card">
+                <div class="card-title">Aggiungi Prodotto</div>
+                <div class="row">
+                    <input type="text" id="f-nome" placeholder="Nome (es. Latte)">
+                    <input type="text" id="f-qta" placeholder="Qtà" style="width: 35%">
+                </div>
+                <div class="row">
+                    <input type="date" id="f-scad">
+                    <button onclick="addFrigo()" class="btn-primary">Aggiungi</button>
+                </div>
+            </div>
+
+            <div class="filter-scroll">
+                <button class="chip active" onclick="setFilter('tutti')" id="btn-tutti">Tutti</button>
+                <button class="chip" onclick="setFilter('scadenza')" id="btn-scadenza">⚠️ In Scadenza</button>
+                <button class="chip" onclick="setFilter('finiti')" id="btn-finiti">📉 Quasi Finiti</button>
+            </div>
+
+            <div id="lista-frigo"></div>
+        </div>
+
+        <div id="view-spesa" class="view">
+            <div class="card">
+                <div class="card-title">Cosa manca?</div>
+                <div class="row">
+                    <input type="text" id="c-nome" placeholder="Prodotto...">
+                    <button onclick="addCarrello()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button>
+                </div>
+            </div>
+            <button onclick="askSvuota()" style="background: #262730; color: #ff4b4b; margin-bottom: 20px;">Svuota Lista Spesa</button>
+            <div id="lista-carrello"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="nav('frigo')">
+            <span class="material-icons-round">kitchen</span><label>Frigo</label>
+        </div>
+        <div class="nav-item" onclick="nav('spesa')">
+            <span class="material-icons-round">shopping_cart</span><label>Spesa</label>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api';
+        let itemToDeleteId = null, deleteType = null;
+        let currentFilter = 'tutti';
+
+        function nav(vista) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + vista).classList.add('active');
+            
+            if(vista === 'frigo') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(vista === 'spesa') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            document.getElementById('header-title').innerText = vista === 'frigo' ? 'Il Mio Frigo' : 'Lista Spesa';
+
+            if(vista === 'frigo') loadFrigo();
+            if(vista === 'spesa') loadCarrello();
+        }
+
+        function setFilter(tipo) {
+            currentFilter = tipo;
+            document.querySelectorAll('.chip').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + tipo).classList.add('active');
+            loadFrigo();
+        }
+
+        /* FRIGO & SLIDER LOGIC */
+        async function loadFrigo() {
+            const res = await fetch(`${API}/frigo`);
+            let data = await res.json();
+            const div = document.getElementById('lista-frigo');
+            div.innerHTML = '';
+
+            const oggi = new Date();
+            if (currentFilter === 'scadenza') {
+                data = data.filter(item => {
+                    if (!item.scadenza) return false;
+                    const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24)); 
+                    return diffDays <= 3;
+                });
+            } else if (currentFilter === 'finiti') {
+                data = data.filter(item => item.rimasto <= 20);
+            }
+
+            if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Nessun prodotto.</div>`; return; }
+            
+            data.forEach(item => {
+                let avvisoScadenza = '', borderStyle = '';
+                if (item.scadenza) {
+                    const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) { avvisoScadenza = `<span class="urgent">SCADUTO!</span>`; borderStyle = 'border-left-color: #ff4b4b;'; }
+                    else if (diffDays <= 3) { avvisoScadenza = `<span class="urgent">Scade tra ${diffDays} gg</span>`; borderStyle = 'border-left-color: orange;'; }
+                    else { avvisoScadenza = `<span style="color:#aaa">Scad: ${item.scadenza}</span>`; borderStyle = 'border-left-color: #00d4b1;'; }
+                }
+
+                // COLORE BARRA: Verdeacqua sopra 50%, Rosso altrimenti
+                const colorBar = item.rimasto > 50 ? '#00d4b1' : '#ff4b4b';
+                
+                // NOTA: Aggiunto accent-color dinamico nello style per colorare anche il pallino
+                div.innerHTML += `
+                <div class="item" style="${borderStyle}">
+                    <div style="flex:1">
+                        <div class="item-info">
+                            <h3>${item.nome}</h3>
+                            <p>${item.quantita} • ${avvisoScadenza}</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+                            <input type="range" id="slider-${item.id}" min="0" max="100" value="${item.rimasto}" 
+                                oninput="onSliderDrag(${item.id}, this.value)"
+                                style="accent-color: ${colorBar}; background: linear-gradient(to right, ${colorBar} ${item.rimasto}%, #444 ${item.rimasto}%)">
+                            
+                            <span id="perc-text-${item.id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span>
+                            
+                            <button id="save-btn-${item.id}" onclick="confirmSliderUpdate(${item.id})" class="btn-save-slider">
+                                ✅ Salva
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="openModal(${item.id}, 'frigo')" class="btn-icon btn-delete" style="margin-left: 10px;"><span class="material-icons-round">delete</span></button>
+                </div>`;
+            });
+        }
+
+        // Chiamata mentre trascini lo slider (oninput)
+        function onSliderDrag(id, val) {
+            // Logica: Sopra 50% Verde, Sotto Rosso
+            const color = val > 50 ? '#00d4b1' : '#ff4b4b';
+            
+            const slider = document.getElementById(`slider-${id}`);
+            
+            // Aggiorna colore background (barra piena)
+            slider.style.background = `linear-gradient(to right, ${color} ${val}%, #444 ${val}%)`;
+            
+            // Aggiorna colore accent (pallino)
+            slider.style.accentColor = color;
+
+            // Aggiorna testo percentuale e colore live
+            const percText = document.getElementById(`perc-text-${id}`);
+            percText.innerText = val + '%';
+            percText.style.color = color;
+            
+            // Mostra il bottone salva
+            document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
+        }
+
+        // Chiamata quando clicchi il bottone salva
+        async function confirmSliderUpdate(id) {
+            const val = document.getElementById(`slider-${id}`).value;
+            await fetch(`${API}/frigo/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ rimasto: val })
+            });
+            document.getElementById(`save-btn-${id}`).style.display = 'none';
+            loadFrigo(); 
+        }
+
+        /* ALTRE FUNZIONI */
+        async function addFrigo() {
+            const nome = document.getElementById('f-nome').value;
+            const qta = document.getElementById('f-qta').value;
+            const scad = document.getElementById('f-scad').value;
+            if(!nome) return;
+            await fetch(`${API}/frigo`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, scadenza: scad }) });
+            document.getElementById('f-nome').value = '';
+            loadFrigo();
+        }
+        
+        async function loadCarrello() {
+            const res = await fetch(`${API}/carrello`);
+            const data = await res.json();
+            const div = document.getElementById('lista-carrello');
+            div.innerHTML = '';
+            data.forEach(item => {
+                div.innerHTML += `
+                <div class="item" style="border-left: 3px solid #00d4b1;">
+                    <div class="item-info"><h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p></div>
+                    <button onclick="openModal(${item.id}, 'carrello')" class="btn-icon" style="color:#00d4b1"><span class="material-icons-round">check_circle</span></button>
+                </div>`;
+            });
+        }
+        async function addCarrello() {
+            const nome = document.getElementById('c-nome').value;
+            if(!nome) return;
+            await fetch(`${API}/carrello`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: '1 pz' }) });
+            document.getElementById('c-nome').value = '';
+            loadCarrello();
+        }
+
+        /* MODALE */
+        function openModal(id, type) {
+            itemToDeleteId = id; deleteType = type;
+            const modal = document.getElementById('modal-confirm');
+            if(type === 'svuota') { document.getElementById('modal-title').innerText="Svuotare?"; document.getElementById('modal-text').innerText="Cancellerai tutta la lista."; }
+            else if(type === 'carrello') { document.getElementById('modal-title').innerText="Preso?"; document.getElementById('modal-text').innerText="Confermi di averlo preso?"; }
+            else { document.getElementById('modal-title').innerText="Eliminare?"; document.getElementById('modal-text').innerText="L'azione è irreversibile."; }
+            modal.style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('modal-confirm').style.display = 'none'; }
+        async function confirmAction() {
+            if (deleteType === 'frigo') await fetch(`${API}/frigo/${itemToDeleteId}`, { method: 'DELETE' });
+            if (deleteType === 'carrello') await fetch(`${API}/carrello/${itemToDeleteId}`, { method: 'DELETE' });
+            if (deleteType === 'svuota') await fetch(`${API}/carrello`, { method: 'DELETE' });
+            closeModal();
+            if(deleteType === 'frigo') loadFrigo(); else loadCarrello();
+        }
+        function askSvuota() { openModal(0, 'svuota'); }
+
+        loadFrigo();
+    </script>
+</body>
+</html>
