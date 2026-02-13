@@ -8,18 +8,18 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // --- CONNESSIONE DATABASE ---
-// Prende la password da Render (o dal file .env se sei sul pc)
 const connectionString = process.env.MONGO_URI;
 
 mongoose.connect(connectionString)
     .then(() => console.log("✅ Connesso a MongoDB Atlas!"))
     .catch(err => console.error("❌ Errore connessione DB:", err));
 
-// --- SCHEMI DATI (La forma dei dati nel database) ---
+// --- SCHEMI DATI ---
 const frigoSchema = new mongoose.Schema({
     nome: String,
     quantita: String,
     scadenza: String,
+    categoria: { type: String, default: 'altro' }, // NUOVO CAMPO
     rimasto: { type: Number, default: 100 }
 });
 const carrelloSchema = new mongoose.Schema({
@@ -68,7 +68,7 @@ app.delete('/api/carrello/:id', async (req, res) => {
 });
 
 app.delete('/api/carrello', async (req, res) => {
-    await Carrello.deleteMany({}); // Svuota tutto il carrello
+    await Carrello.deleteMany({}); 
     res.json({ success: true });
 });
 
