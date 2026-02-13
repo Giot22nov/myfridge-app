@@ -1,48 +1,75 @@
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 app.use(express.json());
 
-// DATI INIZIALI (Simuliamo il tuo frigo del video)
-// let frigo = [
-//    { id: 1, nome: "Latte Granarolo", quantita: "1 L", scadenza: "2026-02-20", rimasto: 40 },
-//    { id: 2, nome: "Riso Basmati", quantita: "1 Kg", scadenza: "2026-03-15", rimasto: 80 },
-//    { id: 3, nome: "Uova", quantita: "6 pz", scadenza: "2026-02-18", rimasto: 100 }
-// ];
-// let carrello = [
-//    { id: 1, nome: "Carta Igienica", quantita: "1 pacco" }
-//;
+// --- CONNESSIONE DATABASE ---
+// Prende la password da Render (o dal file .env se sei sul pc)
+const connectionString = process.env.MONGO_URI;
 
-// API
-app.get('/api/frigo', (req, res) => res.json(frigo));
-app.post('/api/frigo', (req, res) => {
-    frigo.push({ id: Date.now(), ...req.body, rimasto: 100 });
-    res.json({ success: true });
+mongoose.connect(connectionString)
+    .then(() => console.log("✅ Connesso a MongoDB Atlas!"))
+    .catch(err => console.error("❌ Errore connessione DB:", err));
+
+// --- SCHEMI DATI (La forma dei dati nel database) ---
+const frigoSchema = new mongoose.Schema({
+    nome: String,
+    quantita: String,
+    scadenza: String,
+    rimasto: { type: Number, default: 100 }
 });
-app.put('/api/frigo/:id', (req, res) => {
-    const idx = frigo.findIndex(i => i.id == req.params.id);
-    if(idx !== -1) frigo[idx].rimasto = req.body.rimasto;
-    res.json({ success: true });
-});
-app.delete('/api/frigo/:id', (req, res) => {
-    frigo = frigo.filter(i => i.id != req.params.id);
-    res.json({ success: true });
+const carrelloSchema = new mongoose.Schema({
+    nome: String,
+    quantita: String
 });
 
-app.get('/api/carrello', (req, res) => res.json(carrello));
-app.post('/api/carrello', (req, res) => {
-    carrello.push({ id: Date.now(), ...req.body });
-    res.json({ success: true });
+const Frigo = mongoose.model('Frigo', frigoSchema);
+const Carrello = mongoose.model('Carrello', carrelloSchema);
+
+// --- API FRIGO ---
+app.get('/api/frigo', async (req, res) => {
+    const items = await Frigo.find();
+    res.json(items);
 });
-app.delete('/api/carrello/:id', (req, res) => {
-    carrello = carrello.filter(i => i.id != req.params.id);
-    res.json({ success: true });
+
+app.post('/api/frigo', async (req, res) => {
+    const newItem = await Frigo.create(req.body);
+    res.json(newItem);
 });
-app.delete('/api/carrello', (req, res) => {
-    carrello = [];
+
+app.put('/api/frigo/:id', async (req, res) => {
+    await Frigo.findByIdAndUpdate(req.params.id, { rimasto: req.body.rimasto });
     res.json({ success: true });
 });
 
-app.listen(port, () => console.log(`Server attivo su http://localhost:${port}`));
+app.delete('/api/frigo/:id', async (req, res) => {
+    await Frigo.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+// --- API CARRELLO ---
+app.get('/api/carrello', async (req, res) => {
+    const items = await Carrello.find();
+    res.json(items);
+});
+
+app.post('/api/carrello', async (req, res) => {
+    await Carrello.create(req.body);
+    res.json({ success: true });
+});
+
+app.delete('/api/carrello/:id', async (req, res) => {
+    await Carrello.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+app.delete('/api/carrello', async (req, res) => {
+    await Carrello.deleteMany({}); // Svuota tutto il carrello
+    res.json({ success: true });
+});
+
+app.listen(port, () => console.log(`Server attivo su porta ${port}`));

@@ -14,7 +14,7 @@
             --bg-card: #262730;
             --text-main: #ffffff;
             --text-sec: #a3a8b8;
-            --accent: #ff4b4b; /* Rosso */
+            --accent: #ff4b4b; /* Rosso base */
             --success: #00d4b1; /* Verde Acqua */
             --nav-bg: #1c1e26;
             --input-bg: #31333F;
@@ -33,10 +33,10 @@
 
         /* INPUTS & BTNS */
         input { background: var(--input-bg); border: 1px solid #41444C; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; margin-bottom: 10px; outline: none; }
-        input:focus { border-color: var(--accent); }
+        input:focus { border-color: #00d4b1; }
         .row { display: flex; gap: 10px; }
         button { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary { background: #00d4b1; color: white; }
         .btn-icon { width: auto; background: transparent; padding: 8px; color: var(--text-sec); }
         .btn-delete { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border-radius: 50%; }
         
@@ -67,12 +67,12 @@
         .modal-box { background: var(--bg-card); width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
         .btn-cancel { background: transparent; border: 1px solid #555; color: white; }
-        .btn-confirm { background: var(--accent); color: white; }
+        .btn-confirm { background: #00d4b1; color: white; }
 
         /* NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; transition: 0.3s; }
-        .nav-item.active { color: var(--accent); transform: translateY(-5px); }
+        .nav-item.active { color: #00d4b1; transform: translateY(-5px); }
         .nav-item span { font-size: 28px; margin-bottom: 2px; }
         .nav-item label { font-size: 10px; font-weight: 600; }
         
@@ -80,7 +80,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         /* SLIDER STYLE */
-        /* Ho rimosso 'accent-color' fisso da qui */
         input[type=range] { height: 4px; padding: 0; margin-top: 8px; cursor: grab; }
         input[type=range]:active { cursor: grabbing; }
     </style>
@@ -202,7 +201,6 @@
                 // COLORE BARRA: Verdeacqua sopra 50%, Rosso altrimenti
                 const colorBar = item.rimasto > 50 ? '#00d4b1' : '#ff4b4b';
                 
-                // NOTA: Aggiunto accent-color dinamico nello style per colorare anche il pallino
                 div.innerHTML += `
                 <div class="item" style="${borderStyle}">
                     <div style="flex:1">
@@ -211,18 +209,18 @@
                             <p>${item.quantita} • ${avvisoScadenza}</p>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
-                            <input type="range" id="slider-${item.id}" min="0" max="100" value="${item.rimasto}" 
-                                oninput="onSliderDrag(${item.id}, this.value)"
+                            <input type="range" id="slider-${item._id}" min="0" max="100" value="${item.rimasto}" 
+                                oninput="onSliderDrag('${item._id}', this.value)"
                                 style="accent-color: ${colorBar}; background: linear-gradient(to right, ${colorBar} ${item.rimasto}%, #444 ${item.rimasto}%)">
                             
-                            <span id="perc-text-${item.id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span>
+                            <span id="perc-text-${item._id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span>
                             
-                            <button id="save-btn-${item.id}" onclick="confirmSliderUpdate(${item.id})" class="btn-save-slider">
+                            <button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">
                                 ✅ Salva
                             </button>
                         </div>
                     </div>
-                    <button onclick="openModal(${item.id}, 'frigo')" class="btn-icon btn-delete" style="margin-left: 10px;"><span class="material-icons-round">delete</span></button>
+                    <button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="margin-left: 10px;"><span class="material-icons-round">delete</span></button>
                 </div>`;
             });
         }
@@ -281,7 +279,7 @@
                 div.innerHTML += `
                 <div class="item" style="border-left: 3px solid #00d4b1;">
                     <div class="item-info"><h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p></div>
-                    <button onclick="openModal(${item.id}, 'carrello')" class="btn-icon" style="color:#00d4b1"><span class="material-icons-round">check_circle</span></button>
+                    <button onclick="openModal('${item._id}', 'carrello')" class="btn-icon" style="color:#00d4b1"><span class="material-icons-round">check_circle</span></button>
                 </div>`;
             });
         }
