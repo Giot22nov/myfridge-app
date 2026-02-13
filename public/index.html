@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyFridge Scanner</title>
+    <title>MyFridge App</title>
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
             --bg-card: #262730;
             --text-main: #ffffff;
             --text-sec: #a3a8b8;
-            --accent: #ff4b4b; /* Rosso base */
+            --accent: #ff4b4b; /* Rosso */
             --success: #00d4b1; /* Verde Acqua */
             --nav-bg: #1c1e26;
             --input-bg: #31333F;
@@ -26,7 +26,13 @@
         body { margin: 0; background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 90px; padding-top: 60px; }
 
         /* HEADER */
-        .header { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(14,17,23,0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #333; z-index: 100; }
+        .header { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px; 
+            background: rgba(14,17,23,0.95); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; 
+            border-bottom: 1px solid #333; z-index: 100; 
+        }
         .header h1 { font-size: 18px; font-weight: 600; margin: 0; }
 
         /* CONTAINER & CARDS */
@@ -51,16 +57,19 @@
         }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-        /* FILTRI */
-        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; scrollbar-width: none; }
-        .chip { padding: 8px 16px; border-radius: 20px; background: #333; color: #aaa; border: 1px solid #444; font-size: 13px; white-space: nowrap; width: auto; transition: 0.2s; }
-        .chip.active { background: white; color: black; border-color: white; font-weight: 700; transform: scale(1.05); }
-
         /* LISTA ITEM */
         .item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid transparent; }
         .item-info h3 { margin: 0 0 4px 0; font-size: 16px; }
         .item-info p { margin: 0; color: var(--text-sec); font-size: 13px; }
         .urgent { color: #ff4b4b; font-weight: bold; }
+
+        /* REGOLE STYLE */
+        .rules-list { list-style: none; padding: 0; margin: 0; }
+        .rules-list li { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; }
+        .rules-list li:last-child { border-bottom: none; }
+        .rule-icon { color: var(--success); font-size: 20px; margin-top: 2px; }
+        .rule-text h4 { margin: 0 0 4px 0; font-size: 15px; color: white; }
+        .rule-text p { margin: 0; font-size: 13px; color: var(--text-sec); line-height: 1.4; }
 
         /* MODALE */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -76,19 +85,27 @@
         .btn-scan-action { width: 48%; display: inline-flex; }
 
         /* NAV */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; transition: transform 0.3s; }
+        .bottom-nav.hidden { transform: translateY(100%); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #555; transition: 0.3s; flex: 1; }
         .nav-item.active { color: #00d4b1; transform: translateY(-5px); }
         .nav-item span { font-size: 28px; margin-bottom: 2px; }
         .nav-item label { font-size: 10px; font-weight: 600; }
         
+        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; scrollbar-width: none; }
+        .chip { padding: 8px 16px; border-radius: 20px; background: #333; color: #aaa; border: 1px solid #444; font-size: 13px; white-space: nowrap; width: auto; transition: 0.2s; }
+        .chip.active { background: white; color: black; border-color: white; font-weight: 700; transform: scale(1.05); }
+
         .view { display: none; } .view.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* SLIDER STYLE */
         input[type=range] { height: 4px; padding: 0; margin-top: 8px; cursor: grab; }
         input[type=range]:active { cursor: grabbing; }
-    </script>
+
+        /* LOGIN STYLE */
+        #pin-display { font-size: 40px; letter-spacing: 10px; margin-bottom: 20px; font-family: monospace; color: #00d4b1; }
+        .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 250px; margin: 0 auto; }
+        .pin-btn { background: #333; font-size: 20px; padding: 20px; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .pin-btn:active { background: #555; transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -104,11 +121,25 @@
         </div>
     </div>
 
-    <div class="header"><h1 id="header-title">Il Mio Frigo</h1></div>
+    <div class="header"><h1 id="header-title">MyFridge App</h1></div>
 
     <div class="container">
         
-        <div id="view-frigo" class="view active">
+        <div id="view-login" class="view">
+            <div class="card" style="text-align: center; margin-top: 50px;">
+                <span class="material-icons-round" style="font-size: 50px; color: #00d4b1; margin-bottom: 20px;">lock</span>
+                <h3>Inserisci PIN</h3>
+                <p style="color: #aaa; font-size: 14px; margin-bottom: 30px;">Accesso Riservato</p>
+                
+                <input type="password" id="pin-input" inputmode="numeric" placeholder="****" 
+                       style="text-align:center; font-size: 24px; letter-spacing: 5px; width: 150px; margin: 0 auto 20px auto; display:block;" maxlength="4">
+                
+                <button onclick="checkPin()" class="btn-primary" style="width: 100%; margin-top: 10px;">ACCEDI</button>
+                <p id="login-error" style="color: #ff4b4b; display: none; margin-top: 15px;">PIN Errato!</p>
+            </div>
+        </div>
+
+        <div id="view-frigo" class="view">
             <div class="card">
                 <div class="card-title">Aggiungi Prodotto</div>
                 <div class="row">
@@ -164,9 +195,54 @@
             <button onclick="askSvuota()" style="background: #262730; color: #ff4b4b; margin-bottom: 20px;">Svuota Lista Spesa</button>
             <div id="lista-carrello"></div>
         </div>
+
+        <div id="view-regole" class="view">
+            <div class="card">
+                <div class="card-title">Guida all'uso</div>
+                <ul class="rules-list">
+                    <li>
+                        <span class="material-icons-round rule-icon">snooze</span>
+                        <div class="rule-text">
+                            <h4>Server in Standby</h4>
+                            <p>Dopo 15 minuti di inattività, il server va in pausa per risparmiare. Se l'app è lenta ad aprirsi, attendi qualche secondo: si sta risvegliando!</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-icons-round rule-icon">qr_code_scanner</span>
+                        <div class="rule-text">
+                            <h4>Limiti dello Scanner</h4>
+                            <p>Lo scanner funziona solo sui prodotti confezionati con codice a barre. Frutta sfusa, pane o affettati del banco vanno inseriti a mano.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-icons-round rule-icon">delete_sweep</span>
+                        <div class="rule-text">
+                            <h4>Tieni pulito</h4>
+                            <p>Mantieni l'inventario aggiornato: quando finisci o butti un prodotto, eliminalo subito dalla lista Frigo.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-icons-round rule-icon">keyboard</span>
+                        <div class="rule-text">
+                            <h4>Scanner fallito?</h4>
+                            <p>Se un codice non viene riconosciuto, o c'è poca luce, usa l'inserimento manuale nella scheda Frigo.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="material-icons-round rule-icon">sync</span>
+                        <div class="rule-text">
+                            <h4>Sincronizzazione</h4>
+                            <p>L'app è condivisa con tutti. Se qualcun altro aggiunge un prodotto, ricarica la pagina per vederlo.</p>
+                        </div>
+                    </li>
+                </ul>
+                <button onclick="logout()" style="background: #333; color: #aaa; margin-top: 20px; font-size: 12px;">Disconnetti (Blocca App)</button>
+            </div>
+        </div>
+
     </div>
 
-    <div class="bottom-nav">
+    <div id="bottom-nav" class="bottom-nav hidden">
         <div class="nav-item active" onclick="nav('frigo')">
             <span class="material-icons-round">kitchen</span><label>Frigo</label>
         </div>
@@ -176,36 +252,85 @@
         <div class="nav-item" onclick="nav('spesa')">
             <span class="material-icons-round">shopping_cart</span><label>Spesa</label>
         </div>
+        <div class="nav-item" onclick="nav('regole')">
+            <span class="material-icons-round">info</span><label>Info</label>
+        </div>
     </div>
 
     <script>
         const API = '/api';
+        const CORRECT_PIN = "2211"; // IL TUO PIN
         let itemToDeleteId = null, deleteType = null;
         let currentFilter = 'tutti';
         let html5QrcodeScanner = null;
         let scannedProduct = { name: '', qta: '' };
 
+        // AL CARICAMENTO DELLA PAGINA: CONTROLLA SE GIA' LOGGATO
+        document.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem('myfridge_auth') === 'true') {
+                nav('frigo'); // Già loggato? Vai al frigo
+            } else {
+                nav('login'); // Non loggato? Mostra login
+            }
+        });
+
+        function checkPin() {
+            const input = document.getElementById('pin-input').value;
+            if (input === CORRECT_PIN) {
+                localStorage.setItem('myfridge_auth', 'true'); // Salva l'accesso
+                document.getElementById('login-error').style.display = 'none';
+                document.getElementById('pin-input').value = '';
+                nav('frigo');
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('pin-input').value = '';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('myfridge_auth');
+            nav('login');
+        }
+
         function nav(vista) {
             // Gestione UI tab
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + vista).classList.add('active');
             
-            // Icone attive
+            const bottomNav = document.getElementById('bottom-nav');
+
+            if (vista === 'login') {
+                // Nascondi menu in basso e cambia titolo
+                bottomNav.classList.add('hidden');
+                document.getElementById('header-title').innerText = "Login Richiesto";
+                return; // Esci, non fare altro
+            } else {
+                // Mostra menu in basso
+                bottomNav.classList.remove('hidden');
+            }
+            
+            // Icone attive (0=Frigo, 1=Scan, 2=Spesa, 3=Info)
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const items = document.querySelectorAll('.nav-item');
             if(vista === 'frigo') items[0].classList.add('active');
             if(vista === 'scanner') items[1].classList.add('active');
             if(vista === 'spesa') items[2].classList.add('active');
+            if(vista === 'regole') items[3].classList.add('active');
             
             // Titolo Header
-            const titles = { 'frigo': 'Il Mio Frigo', 'scanner': 'Scannerizza', 'spesa': 'Lista Spesa' };
+            const titles = { 
+                'frigo': 'Il Mio Frigo', 
+                'scanner': 'Scannerizza', 
+                'spesa': 'Lista Spesa',
+                'regole': 'Guida & Regole'
+            };
             document.getElementById('header-title').innerText = titles[vista];
 
             // Logica specifica per vista
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
             
-            // Gestione fotocamera: Accendi solo se scanner, spegni se esci
+            // Gestione fotocamera
             if(vista === 'scanner') {
                 startScanner();
             } else {
@@ -215,17 +340,15 @@
 
         /* --- LOGICA SCANNER --- */
         function startScanner() {
-            // Resetta UI
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
             
-            // Avvia scanner
             if(!html5QrcodeScanner) {
                 html5QrcodeScanner = new Html5Qrcode("reader");
             }
             
             html5QrcodeScanner.start(
-                { facingMode: "environment" }, // Usa fotocamera posteriore
+                { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 onScanSuccess,
                 onScanFailure
@@ -237,18 +360,14 @@
 
         function stopScanner() {
             if(html5QrcodeScanner && html5QrcodeScanner.isScanning) {
-                html5QrcodeScanner.stop().then(() => {
-                    console.log("Scanner fermato");
-                }).catch(err => console.log("Errore stop", err));
+                html5QrcodeScanner.stop().then(() => console.log("Stop")).catch(err => console.log(err));
             }
         }
 
         async function onScanSuccess(decodedText, decodedResult) {
-            // Ferma scansione appena trova qualcosa
             html5QrcodeScanner.stop(); 
             document.getElementById('scan-status').innerText = "Trovato! Ricerca in corso...";
 
-            // Chiama Open Food Facts
             try {
                 const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
                 const data = await response.json();
@@ -260,58 +379,45 @@
                     const img = product.image_front_small_url || "https://via.placeholder.com/100?text=No+Img";
                     const qta = product.quantity || "1 pz";
 
-                    // Mostra risultato
                     document.getElementById('result-card').style.display = 'block';
                     document.getElementById('result-name').innerText = name;
                     document.getElementById('result-brand').innerText = brand;
                     document.getElementById('result-img').src = img;
                     document.getElementById('scan-status').innerText = "Codice: " + decodedText;
 
-                    // Salva in variabile temporanea per l'aggiunta
                     scannedProduct = { name: `${name} ${brand}`, qta: qta };
                 } else {
-                    document.getElementById('scan-status').innerText = "Prodotto non trovato nel database.";
-                    setTimeout(() => startScanner(), 2000); // Riavvia dopo 2 sec
+                    document.getElementById('scan-status').innerText = "Prodotto non trovato.";
+                    setTimeout(() => startScanner(), 2000);
                 }
             } catch (e) {
-                document.getElementById('scan-status').innerText = "Errore di connessione.";
+                document.getElementById('scan-status').innerText = "Errore connessione.";
             }
         }
 
-        function onScanFailure(error) {
-            // Non fare nulla, continua a cercare
-        }
+        function onScanFailure(error) {}
 
         async function addToFromScan(dest) {
             if(!scannedProduct.name) return;
+            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
+            const scadDefault = oggi.toISOString().split('T')[0];
+            
+            const payload = dest === 'frigo' 
+                ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: scadDefault }
+                : { nome: scannedProduct.name, quantita: scannedProduct.qta };
 
-            if(dest === 'frigo') {
-                // Aggiungi al frigo (default scadenza fra 7gg per comodità)
-                const oggi = new Date();
-                oggi.setDate(oggi.getDate() + 7);
-                const scadDefault = oggi.toISOString().split('T')[0];
-                
-                await fetch(`${API}/frigo`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: scadDefault }) 
-                });
-                nav('frigo'); // Vai al frigo
-            } else {
-                // Aggiungi alla spesa
-                await fetch(`${API}/carrello`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ nome: scannedProduct.name, quantita: scannedProduct.qta }) 
-                });
-                nav('spesa'); // Vai alla spesa
-            }
-            // Nascondi risultato scanner per la prossima volta
+            const endpoint = dest === 'frigo' ? '/frigo' : '/carrello';
+            
+            await fetch(`${API}${endpoint}`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            nav(dest);
             document.getElementById('result-card').style.display = 'none';
         }
 
-
-        /* --- FINE LOGICA SCANNER --- */
+        /* --- FINE SCANNER --- */
 
         function setFilter(tipo) {
             currentFilter = tipo;
@@ -320,7 +426,6 @@
             loadFrigo();
         }
 
-        /* FRIGO & SLIDER LOGIC */
         async function loadFrigo() {
             const res = await fetch(`${API}/frigo`);
             let data = await res.json();
@@ -348,7 +453,6 @@
                     else if (diffDays <= 3) { avvisoScadenza = `<span class="urgent">Scade tra ${diffDays} gg</span>`; borderStyle = 'border-left-color: orange;'; }
                     else { avvisoScadenza = `<span style="color:#aaa">Scad: ${item.scadenza}</span>`; borderStyle = 'border-left-color: #00d4b1;'; }
                 }
-
                 const colorBar = item.rimasto > 50 ? '#00d4b1' : '#ff4b4b';
                 
                 div.innerHTML += `
@@ -362,12 +466,8 @@
                             <input type="range" id="slider-${item._id}" min="0" max="100" value="${item.rimasto}" 
                                 oninput="onSliderDrag('${item._id}', this.value)"
                                 style="accent-color: ${colorBar}; background: linear-gradient(to right, ${colorBar} ${item.rimasto}%, #444 ${item.rimasto}%)">
-                            
                             <span id="perc-text-${item._id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span>
-                            
-                            <button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">
-                                ✅ Salva
-                            </button>
+                            <button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">✅ Salva</button>
                         </div>
                     </div>
                     <button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="margin-left: 10px;"><span class="material-icons-round">delete</span></button>
@@ -375,7 +475,6 @@
             });
         }
 
-        // Chiamata mentre trascini lo slider (oninput)
         function onSliderDrag(id, val) {
             const color = val > 50 ? '#00d4b1' : '#ff4b4b';
             const slider = document.getElementById(`slider-${id}`);
@@ -387,19 +486,13 @@
             document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
         }
 
-        // Chiamata quando clicchi il bottone salva
         async function confirmSliderUpdate(id) {
             const val = document.getElementById(`slider-${id}`).value;
-            await fetch(`${API}/frigo/${id}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ rimasto: val })
-            });
+            await fetch(`${API}/frigo/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ rimasto: val }) });
             document.getElementById(`save-btn-${id}`).style.display = 'none';
             loadFrigo(); 
         }
 
-        /* ALTRE FUNZIONI */
         async function addFrigo() {
             const nome = document.getElementById('f-nome').value;
             const qta = document.getElementById('f-qta').value;
@@ -431,7 +524,6 @@
             loadCarrello();
         }
 
-        /* MODALE */
         function openModal(id, type) {
             itemToDeleteId = id; deleteType = type;
             const modal = document.getElementById('modal-confirm');
@@ -449,8 +541,6 @@
             if(deleteType === 'frigo') loadFrigo(); else loadCarrello();
         }
         function askSvuota() { openModal(0, 'svuota'); }
-
-        loadFrigo();
     </script>
 </body>
 </html>
