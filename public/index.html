@@ -102,6 +102,44 @@
         </div>
     </div>
 
+    <div id="modal-scan-edit" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="scan-edit-title" style="margin-top:0; color:white;">Completa Prodotto</h3>
+            <p style="color:#aaa; font-size: 13px; margin-bottom: 15px;">Controlla e modifica i dati prima di salvare.</p>
+
+            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome Prodotto</label>
+                <input type="text" id="scan-edit-nome" placeholder="Nome prodotto" style="margin-bottom: 12px;">
+
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <div style="width:40%;">
+                        <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Quantità</label>
+                        <input type="text" id="scan-edit-qta" placeholder="Qtà" style="width:100%; margin:0;">
+                    </div>
+                    <div style="width:60%;" id="scan-edit-cat-container">
+                        <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Categoria</label>
+                        <select id="scan-edit-cat" style="width:100%; margin:0;">
+                            <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option>
+                            <option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option>
+                            <option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option>
+                            <option value="bevande">🥤 Bevande</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="scan-edit-scad-container">
+                    <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Scadenza</label>
+                    <input type="date" id="scan-edit-scad" style="margin:0; width:100%;">
+                </div>
+            </div>
+
+            <div class="modal-btns">
+                <button onclick="closeScanEditModal()" class="btn-cancel">Annulla</button>
+                <button onclick="confirmScanEdit()" class="btn-confirm" id="scan-edit-btn-confirm">Salva</button>
+            </div>
+        </div>
+    </div>
+
     <div class="header"><h1 id="header-title">MyFridge App</h1></div>
 
     <div class="container">
@@ -158,10 +196,10 @@
                     <h3 id="result-name" style="margin: 5px 0;">Nome Prodotto</h3>
                     <p id="result-brand" style="color: #aaa; font-size: 12px; margin-bottom: 15px;">Marca</p>
                     <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button onclick="addToFromScan('frigo')" class="btn-primary btn-scan-action">
+                        <button onclick="openScanEditModal('frigo')" class="btn-primary btn-scan-action">
                             <span class="material-icons-round" style="font-size:16px">kitchen</span> Frigo
                         </button>
-                        <button onclick="addToFromScan('spesa')" class="btn-primary btn-scan-action" style="background: white; color: black;">
+                        <button onclick="openScanEditModal('spesa')" class="btn-primary btn-scan-action" style="background: white; color: black;">
                             <span class="material-icons-round" style="font-size:16px">shopping_cart</span> Spesa
                         </button>
                     </div>
@@ -223,12 +261,12 @@
         let currentFilter = 'tutti';
         let searchTerm = '';
         
-        // VARIABILI SCANNER NUOVE
         let html5QrcodeScanner = null;
         let isScanning = false; 
         
         let scannedProduct = { name: '', qta: '' };
         let itemsToTransfer = []; 
+        let scanDest = ''; // Serve a capire se andrà in frigo o spesa dal popup
 
         const catIcons = { 'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦', 'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦' };
 
@@ -272,7 +310,6 @@
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
             
-            // Gestione Sicura fotocamera
             if(vista === 'scanner') {
                 startScanner();
             } else {
@@ -290,17 +327,12 @@
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
             
-            // Se c'è già uno scanner in corso, fermati.
-            if (isScanning) return;
-
-            // Se c'è un rimasuglio di scanner vecchio, puliscilo
-            if (html5QrcodeScanner) {
-                try { html5QrcodeScanner.clear(); } catch(e){}
-                html5QrcodeScanner = null;
+            if (isScanning) return; // Se già attivo, ignora
+            
+            // Inizializza lo scanner SOLO la prima volta per non distruggere l'HTML
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5Qrcode("reader");
             }
-
-            // Crea un'istanza totalmente nuova
-            html5QrcodeScanner = new Html5Qrcode("reader");
             
             html5QrcodeScanner.start(
                 { facingMode: "environment" }, 
@@ -310,7 +342,7 @@
             ).then(() => {
                 isScanning = true;
             }).catch(err => {
-                document.getElementById('scan-status').innerText = "Errore Fotocamera. Controlla i permessi.";
+                document.getElementById('scan-status').innerText = "Errore Fotocamera. Ricarica la pagina.";
             });
         }
 
@@ -318,20 +350,18 @@
             if(html5QrcodeScanner && isScanning) {
                 try {
                     await html5QrcodeScanner.stop();
-                    html5QrcodeScanner.clear();
                 } catch(e) { console.log("Errore stop", e); }
                 isScanning = false;
-                html5QrcodeScanner = null; // Distruzione completa
             }
         }
 
         async function onScanSuccess(decodedText) {
-            if (!isScanning) return; // Evita letture multiple
+            if (!isScanning) return; // Evita esecuzioni multiple
 
-            // 1. Spegni la fotocamera SUBITO per sbloccarla
+            // Ferma la fotocamera per non bloccarsi, ma non distruggerla!
             await stopScanner();
             
-            document.getElementById('scan-status').innerText = "Codice trovato! Ricerca in corso...";
+            document.getElementById('scan-status').innerText = "Trovato! Ricerca in corso...";
             
             try {
                 const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
@@ -344,7 +374,7 @@
                     document.getElementById('result-card').style.display = 'block';
                 } else {
                     document.getElementById('scan-status').innerText = "Prodotto non trovato nel database.";
-                    setTimeout(() => startScanner(), 2000); // Riavvia in automatico
+                    setTimeout(() => startScanner(), 2000);
                 }
             } catch (e) { 
                 document.getElementById('scan-status').innerText = "Errore connessione di rete.";
@@ -355,20 +385,72 @@
         function onScanFailure(error) {}
 
         function cancelScan() {
-            // Tasto "Scansiona un altro": riavvia tutto da zero.
-            startScanner();
+            startScanner(); // Riapre la telecamera pulita
         }
 
-        async function addToFromScan(dest) {
+        /* --- NUOVA LOGICA: MODALE DOPO LO SCAN --- */
+        function openScanEditModal(dest) {
             if(!scannedProduct.name) return;
-            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
-            const payload = dest === 'frigo' 
-                ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: oggi.toISOString().split('T')[0], categoria: 'altro' } 
-                : { nome: scannedProduct.name, quantita: scannedProduct.qta };
-            await fetch(`${API}/${dest === 'frigo' ? 'frigo' : 'carrello'}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            nav(dest);
+            scanDest = dest;
+
+            // Pre-compila nome e quantità
+            document.getElementById('scan-edit-nome').value = scannedProduct.name;
+            document.getElementById('scan-edit-qta').value = scannedProduct.qta;
+
+            const catContainer = document.getElementById('scan-edit-cat-container');
+            const scadContainer = document.getElementById('scan-edit-scad-container');
+            const confirmBtn = document.getElementById('scan-edit-btn-confirm');
+            const title = document.getElementById('scan-edit-title');
+
+            if (dest === 'frigo') {
+                title.innerText = "Aggiungi al Frigo";
+                catContainer.style.display = 'block';
+                scadContainer.style.display = 'block';
+                document.getElementById('scan-edit-cat').value = 'altro'; // default
+                
+                // Data default +7 gg
+                const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
+                document.getElementById('scan-edit-scad').value = oggi.toISOString().split('T')[0];
+                
+                confirmBtn.innerText = "Salva in Frigo";
+            } else {
+                title.innerText = "Aggiungi alla Spesa";
+                catContainer.style.display = 'none';
+                scadContainer.style.display = 'none';
+                confirmBtn.innerText = "Salva in Spesa";
+            }
+
+            document.getElementById('modal-scan-edit').style.display = 'flex';
         }
 
+        function closeScanEditModal() {
+            document.getElementById('modal-scan-edit').style.display = 'none';
+        }
+
+        async function confirmScanEdit() {
+            const nome = document.getElementById('scan-edit-nome').value;
+            const qta = document.getElementById('scan-edit-qta').value;
+            if(!nome) return;
+
+            let payload;
+            if (scanDest === 'frigo') {
+                const cat = document.getElementById('scan-edit-cat').value;
+                const scad = document.getElementById('scan-edit-scad').value;
+                payload = { nome, quantita: qta, categoria: cat, scadenza: scad };
+            } else {
+                payload = { nome, quantita: qta };
+            }
+
+            await fetch(`${API}/${scanDest}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            closeScanEditModal();
+            document.getElementById('result-card').style.display = 'none';
+            nav(scanDest); // Va al frigo o alla spesa per farti vedere il prodotto aggiunto!
+        }
         /* ================================================================= */
 
         /* --- FRIGO --- */
@@ -458,7 +540,7 @@
             loadFrigo();
         }
 
-        /* --- CARRELLO & TRASFERIMENTO --- */
+        /* --- CARRELLO --- */
         async function loadCarrello() {
             const res = await fetch(`${API}/carrello`);
             const data = await res.json();
@@ -516,7 +598,7 @@
                 document.getElementById('modal-text').innerText = `Hai spuntato ${itemsToTransfer.length} prodotti. Vuoi spostarli direttamente nel frigo prima di svuotare il carrello?`;
                 btns.innerHTML = `
                     <button onclick="closeModal()" class="btn-cancel" style="flex:1;">Annulla</button>
-                    <button onclick="executeSvuota(false)" class="btn-cancel" style="flex:1; border-color:#ff4b4b; color:#ff4b4b;">No, Svuota e basta</button>
+                    <button onclick="executeSvuota(false)" class="btn-cancel" style="flex:1; border-color:#ff4b4b; color:#ff4b4b;">No, Svuota</button>
                     <button onclick="openTransferModal()" class="btn-confirm" style="flex:1.5;">Sì, Sposta nel Frigo</button>
                 `;
             } else {
