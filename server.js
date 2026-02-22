@@ -25,7 +25,7 @@ const frigoSchema = new mongoose.Schema({
 const carrelloSchema = new mongoose.Schema({
     nome: String,
     quantita: String,
-    preso: { type: Boolean, default: false } // NUOVO: Flag preso/non preso
+    preso: { type: Boolean, default: false }
 });
 
 const Frigo = mongoose.model('Frigo', frigoSchema);
@@ -42,8 +42,9 @@ app.post('/api/frigo', async (req, res) => {
     res.json(newItem);
 });
 
+// MODIFICATO: Ora accetta l'aggiornamento di TUTTI i campi, non solo "rimasto"
 app.put('/api/frigo/:id', async (req, res) => {
-    await Frigo.findByIdAndUpdate(req.params.id, { rimasto: req.body.rimasto });
+    await Frigo.findByIdAndUpdate(req.params.id, req.body);
     res.json({ success: true });
 });
 
@@ -63,7 +64,6 @@ app.post('/api/carrello', async (req, res) => {
     res.json({ success: true });
 });
 
-// NUOVA ROTTA: Per aggiornare lo stato "preso"
 app.put('/api/carrello/:id', async (req, res) => {
     await Carrello.findByIdAndUpdate(req.params.id, { preso: req.body.preso });
     res.json({ success: true });

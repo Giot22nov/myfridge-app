@@ -90,6 +90,41 @@
         </div>
     </div>
 
+    <div id="modal-edit-frigo" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:white;">Modifica Prodotto</h3>
+            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome Prodotto</label>
+                <input type="text" id="edit-f-nome" style="margin-bottom: 12px;">
+
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <div style="width:40%;">
+                        <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Quantità</label>
+                        <input type="text" id="edit-f-qta" style="width:100%; margin:0;">
+                    </div>
+                    <div style="width:60%;">
+                        <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Categoria</label>
+                        <select id="edit-f-cat" style="width:100%; margin:0;">
+                            <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option>
+                            <option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option>
+                            <option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option>
+                            <option value="bevande">🥤 Bevande</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Scadenza</label>
+                    <input type="date" id="edit-f-scad" style="margin:0; width:100%;">
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button onclick="closeEditFrigoModal()" class="btn-cancel">Annulla</button>
+                <button onclick="confirmEditFrigo()" class="btn-confirm">Salva Modifiche</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-transfer" class="modal-overlay">
         <div class="modal-box">
             <h3 style="margin-top:0; color:white;">Completa per il Frigo</h3>
@@ -266,7 +301,11 @@
         
         let scannedProduct = { name: '', qta: '' };
         let itemsToTransfer = []; 
-        let scanDest = ''; // Serve a capire se andrà in frigo o spesa dal popup
+        let scanDest = '';
+        
+        // Memoria per l'editing
+        let allFrigoItems = [];
+        let itemToEditId = null;
 
         const catIcons = { 'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦', 'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦' };
 
@@ -310,59 +349,35 @@
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
             
-            if(vista === 'scanner') {
-                startScanner();
-            } else {
-                stopScanner();
-            }
+            if(vista === 'scanner') startScanner(); else stopScanner();
         }
 
         function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
 
-        /* ================================================================= */
-        /* --- LOGICA SCANNER AGGIORNATA (ANTI-BLOCCO) --- */
-        /* ================================================================= */
-
+        /* --- SCANNER --- */
         function startScanner() {
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            
-            if (isScanning) return; // Se già attivo, ignora
-            
-            // Inizializza lo scanner SOLO la prima volta per non distruggere l'HTML
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5Qrcode("reader");
-            }
+            if (isScanning) return; 
+            if (!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
             
             html5QrcodeScanner.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                onScanSuccess, 
-                onScanFailure
-            ).then(() => {
-                isScanning = true;
-            }).catch(err => {
-                document.getElementById('scan-status').innerText = "Errore Fotocamera. Ricarica la pagina.";
-            });
+                { facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure
+            ).then(() => { isScanning = true; }).catch(err => { document.getElementById('scan-status').innerText = "Errore Fotocamera."; });
         }
 
         async function stopScanner() {
             if(html5QrcodeScanner && isScanning) {
-                try {
-                    await html5QrcodeScanner.stop();
-                } catch(e) { console.log("Errore stop", e); }
+                try { await html5QrcodeScanner.stop(); } catch(e) {}
                 isScanning = false;
             }
         }
 
         async function onScanSuccess(decodedText) {
-            if (!isScanning) return; // Evita esecuzioni multiple
-
-            // Ferma la fotocamera per non bloccarsi, ma non distruggerla!
+            if (!isScanning) return; 
             await stopScanner();
             
             document.getElementById('scan-status').innerText = "Trovato! Ricerca in corso...";
-            
             try {
                 const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
                 const data = await res.json();
@@ -376,24 +391,17 @@
                     document.getElementById('scan-status').innerText = "Prodotto non trovato nel database.";
                     setTimeout(() => startScanner(), 2000);
                 }
-            } catch (e) { 
-                document.getElementById('scan-status').innerText = "Errore connessione di rete.";
-                setTimeout(() => startScanner(), 2000);
-            }
+            } catch (e) { document.getElementById('scan-status').innerText = "Errore di rete."; setTimeout(() => startScanner(), 2000); }
         }
 
         function onScanFailure(error) {}
+        function cancelScan() { startScanner(); }
 
-        function cancelScan() {
-            startScanner(); // Riapre la telecamera pulita
-        }
-
-        /* --- NUOVA LOGICA: MODALE DOPO LO SCAN --- */
+        /* --- MODIFICA DOPO SCAN --- */
         function openScanEditModal(dest) {
             if(!scannedProduct.name) return;
             scanDest = dest;
 
-            // Pre-compila nome e quantità
             document.getElementById('scan-edit-nome').value = scannedProduct.name;
             document.getElementById('scan-edit-qta').value = scannedProduct.qta;
 
@@ -406,12 +414,9 @@
                 title.innerText = "Aggiungi al Frigo";
                 catContainer.style.display = 'block';
                 scadContainer.style.display = 'block';
-                document.getElementById('scan-edit-cat').value = 'altro'; // default
-                
-                // Data default +7 gg
+                document.getElementById('scan-edit-cat').value = 'altro'; 
                 const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
                 document.getElementById('scan-edit-scad').value = oggi.toISOString().split('T')[0];
-                
                 confirmBtn.innerText = "Salva in Frigo";
             } else {
                 title.innerText = "Aggiungi alla Spesa";
@@ -423,9 +428,7 @@
             document.getElementById('modal-scan-edit').style.display = 'flex';
         }
 
-        function closeScanEditModal() {
-            document.getElementById('modal-scan-edit').style.display = 'none';
-        }
+        function closeScanEditModal() { document.getElementById('modal-scan-edit').style.display = 'none'; }
 
         async function confirmScanEdit() {
             const nome = document.getElementById('scan-edit-nome').value;
@@ -437,21 +440,13 @@
                 const cat = document.getElementById('scan-edit-cat').value;
                 const scad = document.getElementById('scan-edit-scad').value;
                 payload = { nome, quantita: qta, categoria: cat, scadenza: scad };
-            } else {
-                payload = { nome, quantita: qta };
-            }
+            } else { payload = { nome, quantita: qta }; }
 
-            await fetch(`${API}/${scanDest}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-
+            await fetch(`${API}/${scanDest}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             closeScanEditModal();
             document.getElementById('result-card').style.display = 'none';
-            nav(scanDest); // Va al frigo o alla spesa per farti vedere il prodotto aggiunto!
+            nav(scanDest); 
         }
-        /* ================================================================= */
 
         /* --- FRIGO --- */
         function setFilter(tipo) {
@@ -463,7 +458,9 @@
 
         async function loadFrigo() {
             const res = await fetch(`${API}/frigo`);
-            let data = await res.json();
+            allFrigoItems = await res.json();
+            let data = [...allFrigoItems];
+            
             const div = document.getElementById('lista-frigo');
             div.innerHTML = '';
             const oggi = new Date();
@@ -508,10 +505,48 @@
                             <button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">✅ Salva</button>
                         </div>
                     </div>
-                    <button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="margin-left: 10px;"><span class="material-icons-round">delete</span></button>
+                    <div style="display:flex; align-items:center; gap: 5px;">
+                        <button onclick="openEditFrigoModal('${item._id}')" class="btn-icon" style="color:#a3a8b8; padding:6px;"><span class="material-icons-round" style="font-size: 20px;">edit</span></button>
+                        <button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="padding:6px;"><span class="material-icons-round" style="font-size: 20px;">delete</span></button>
+                    </div>
                 </div>`;
             });
         }
+
+        /* --- MODIFICA OGGETTI ESISTENTI NEL FRIGO --- */
+        function openEditFrigoModal(id) {
+            const item = allFrigoItems.find(i => i._id === id);
+            if(!item) return;
+            itemToEditId = id;
+            
+            document.getElementById('edit-f-nome').value = item.nome || '';
+            document.getElementById('edit-f-qta').value = item.quantita || '';
+            document.getElementById('edit-f-cat').value = item.categoria || 'altro';
+            document.getElementById('edit-f-scad').value = item.scadenza || '';
+            
+            document.getElementById('modal-edit-frigo').style.display = 'flex';
+        }
+
+        function closeEditFrigoModal() { document.getElementById('modal-edit-frigo').style.display = 'none'; }
+
+        async function confirmEditFrigo() {
+            const nome = document.getElementById('edit-f-nome').value;
+            const qta = document.getElementById('edit-f-qta').value;
+            const cat = document.getElementById('edit-f-cat').value;
+            const scad = document.getElementById('edit-f-scad').value;
+            if(!nome) return;
+
+            await fetch(`${API}/frigo/${itemToEditId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nome, quantita: qta, categoria: cat, scadenza: scad })
+            });
+
+            closeEditFrigoModal();
+            loadFrigo();
+        }
+
+        /* --- FINE MODIFICA FRIGO --- */
 
         function onSliderDrag(id, val) {
             const color = val > 50 ? '#00d4b1' : '#ff4b4b';
