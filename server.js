@@ -19,12 +19,13 @@ const frigoSchema = new mongoose.Schema({
     nome: String,
     quantita: String,
     scadenza: String,
-    categoria: { type: String, default: 'altro' }, // NUOVO CAMPO
+    categoria: { type: String, default: 'altro' },
     rimasto: { type: Number, default: 100 }
 });
 const carrelloSchema = new mongoose.Schema({
     nome: String,
-    quantita: String
+    quantita: String,
+    preso: { type: Boolean, default: false } // NUOVO: Flag preso/non preso
 });
 
 const Frigo = mongoose.model('Frigo', frigoSchema);
@@ -59,6 +60,12 @@ app.get('/api/carrello', async (req, res) => {
 
 app.post('/api/carrello', async (req, res) => {
     await Carrello.create(req.body);
+    res.json({ success: true });
+});
+
+// NUOVA ROTTA: Per aggiornare lo stato "preso"
+app.put('/api/carrello/:id', async (req, res) => {
+    await Carrello.findByIdAndUpdate(req.params.id, { preso: req.body.preso });
     res.json({ success: true });
 });
 

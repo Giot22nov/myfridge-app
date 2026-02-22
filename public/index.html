@@ -11,37 +11,22 @@
 
     <style>
         :root {
-            --bg-body: #0e1117;
-            --bg-card: #262730;
-            --text-main: #ffffff;
-            --text-sec: #a3a8b8;
-            --accent: #ff4b4b; 
-            --success: #00d4b1; 
-            --nav-bg: #1c1e26;
-            --input-bg: #31333F;
+            --bg-body: #0e1117; --bg-card: #262730; --text-main: #ffffff; --text-sec: #a3a8b8;
+            --accent: #ff4b4b; --success: #00d4b1; --nav-bg: #1c1e26; --input-bg: #31333F;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg-body); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 90px; padding-top: 60px; }
 
-        .header { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px; 
-            background: rgba(14,17,23,0.95); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center; 
-            border-bottom: 1px solid #333; z-index: 100; 
-        }
+        .header { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(14,17,23,0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #333; z-index: 100; }
         .header h1 { font-size: 18px; font-weight: 600; margin: 0; }
-
         .container { padding: 20px; max-width: 600px; margin: 0 auto; }
         .card { background: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .card-title { font-size: 14px; color: var(--text-sec); margin-bottom: 12px; font-weight: 700; text-transform: uppercase; }
 
-        /* INPUTS */
         input, select { background: var(--input-bg); border: 1px solid #41444C; color: white; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; margin-bottom: 10px; outline: none; -webkit-appearance: none; }
         input:focus, select:focus { border-color: #00d4b1; }
         select { background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; padding-right: 1.5em; }
 
-        /* SEARCH BAR */
         .search-bar { position: relative; margin-bottom: 15px; }
         .search-bar input { padding-left: 40px; margin-bottom: 0; border-radius: 20px; background: #1c1e26; border: 1px solid #333; }
         .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; }
@@ -51,11 +36,10 @@
         .btn-primary { background: #00d4b1; color: white; }
         .btn-icon { width: auto; background: transparent; padding: 8px; color: var(--text-sec); }
         .btn-delete { color: #ff4b4b; background: rgba(255, 75, 75, 0.1); border-radius: 50%; }
-        .btn-save-slider { display: none; width: auto; padding: 5px 10px; background: #fff; color: #000; border-radius: 20px; font-size: 12px; margin-left: 10px; animation: popIn 0.2s forwards; border: 1px solid #ccc; }
-        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .btn-save-slider { display: none; width: auto; padding: 5px 10px; background: #fff; color: #000; border-radius: 20px; font-size: 12px; margin-left: 10px; border: 1px solid #ccc; }
 
-        .item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid transparent; }
-        .item-info h3 { margin: 0 0 4px 0; font-size: 16px; }
+        .item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid transparent; transition: opacity 0.3s; }
+        .item-info h3 { margin: 0 0 4px 0; font-size: 16px; transition: 0.3s; }
         .item-info p { margin: 0; color: var(--text-sec); font-size: 13px; }
         .urgent { color: #ff4b4b; font-weight: bold; }
 
@@ -66,14 +50,15 @@
         .rule-text h4 { margin: 0 0 4px 0; font-size: 15px; color: white; }
         .rule-text p { margin: 0; font-size: 13px; color: var(--text-sec); line-height: 1.4; }
 
+        /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-box { background: var(--bg-card); width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-cancel { background: transparent; border: 1px solid #555; color: white; }
-        .btn-confirm { background: #00d4b1; color: white; }
+        .modal-box { background: var(--bg-card); width: 90%; max-width: 400px; padding: 24px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); max-height: 85vh; overflow-y: auto; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-cancel { background: transparent; border: 1px solid #555; color: white; flex: 1; }
+        .btn-confirm { background: #00d4b1; color: white; flex: 1; }
 
         #reader { width: 100%; border-radius: 12px; overflow: hidden; background: black; margin-bottom: 15px; border: 2px solid #333; }
-        #result-card { display: none; text-align: center; animation: popIn 0.3s; }
+        #result-card { display: none; text-align: center; }
         #result-img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; background: white; margin-bottom: 10px; }
         .btn-scan-action { width: 48%; display: inline-flex; }
 
@@ -92,8 +77,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         input[type=range] { height: 4px; padding: 0; margin-top: 8px; cursor: grab; }
         input[type=range]:active { cursor: grabbing; }
-
-        /* LOGIN STYLE */
         #pin-input { font-size: 24px; letter-spacing: 5px; width: 150px; margin: 0 auto 20px auto; display:block; text-align: center; }
     </style>
 </head>
@@ -103,9 +86,22 @@
         <div class="modal-box">
             <h3 id="modal-title" style="margin-top:0; color:white;">Confermi?</h3>
             <p id="modal-text" style="color:#aaa;">L'azione è irreversibile.</p>
+            <div class="modal-btns" id="modal-confirm-btns">
+                </div>
+        </div>
+    </div>
+
+    <div id="modal-transfer" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:white;">Completa per il Frigo</h3>
+            <p style="color:#aaa; font-size: 13px; margin-bottom: 15px;">Inserisci data e categoria per i prodotti che hai preso.</p>
+            
+            <div id="transfer-list" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;">
+                </div>
+            
             <div class="modal-btns">
-                <button onclick="closeModal()" class="btn-cancel">No</button>
-                <button onclick="confirmAction()" class="btn-confirm">Sì</button>
+                <button onclick="closeTransferModal()" class="btn-cancel">Annulla</button>
+                <button onclick="confirmTransferAndEmpty()" class="btn-confirm">Salva & Svuota</button>
             </div>
         </div>
     </div>
@@ -149,7 +145,7 @@
 
             <div class="search-bar">
                 <span class="material-icons-round search-icon">search</span>
-                <input type="search" id="search-input" placeholder="Cerca prodotto..." oninput="onSearch(this.value)">
+                <input type="search" id="search-input" placeholder="Cerca nel frigo..." oninput="onSearch(this.value)">
             </div>
 
             <div class="filter-scroll">
@@ -190,7 +186,11 @@
                     <button onclick="addCarrello()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button>
                 </div>
             </div>
-            <button onclick="askSvuota()" style="background: #262730; color: #ff4b4b; margin-bottom: 20px;">Svuota Lista Spesa</button>
+            
+            <button onclick="askSvuotaAdvanced()" style="background: #262730; color: #00d4b1; border: 1px solid #00d4b1; margin-bottom: 20px;">
+                <span class="material-icons-round" style="font-size:18px;">shopping_bag</span> Concludi Spesa (Svuota)
+            </button>
+            
             <div id="lista-carrello"></div>
         </div>
 
@@ -198,22 +198,10 @@
             <div class="card">
                 <div class="card-title">Guida all'uso</div>
                 <ul class="rules-list">
-                    <li>
-                        <span class="material-icons-round rule-icon">snooze</span>
-                        <div class="rule-text"><h4>Server in Standby</h4><p>Dopo 15 minuti pausa. Se lento, attendi.</p></div>
-                    </li>
-                    <li>
-                        <span class="material-icons-round rule-icon">qr_code_scanner</span>
-                        <div class="rule-text"><h4>Scanner</h4><p>Solo per confezionati. Cibo fresco a mano.</p></div>
-                    </li>
-                    <li>
-                        <span class="material-icons-round rule-icon">delete_sweep</span>
-                        <div class="rule-text"><h4>Pulizia</h4><p>Togli dal frigo ciò che finisci!</p></div>
-                    </li>
-                    <li>
-                        <span class="material-icons-round rule-icon">sync</span>
-                        <div class="rule-text"><h4>Sync</h4><p>Ricarica la pagina per vedere modifiche altrui.</p></div>
-                    </li>
+                    <li><span class="material-icons-round rule-icon">snooze</span><div class="rule-text"><h4>Server in Standby</h4><p>Dopo 15 minuti pausa. Se lento, attendi.</p></div></li>
+                    <li><span class="material-icons-round rule-icon">qr_code_scanner</span><div class="rule-text"><h4>Scanner</h4><p>Solo per confezionati. Cibo fresco a mano.</p></div></li>
+                    <li><span class="material-icons-round rule-icon">delete_sweep</span><div class="rule-text"><h4>Pulizia</h4><p>Togli dal frigo ciò che finisci!</p></div></li>
+                    <li><span class="material-icons-round rule-icon">sync</span><div class="rule-text"><h4>Sync</h4><p>Ricarica la pagina per vedere modifiche altrui.</p></div></li>
                 </ul>
                 <button onclick="logout()" style="background: #333; color: #aaa; margin-top: 20px; font-size: 12px;">Disconnetti</button>
             </div>
@@ -244,19 +232,12 @@
         let searchTerm = '';
         let html5QrcodeScanner = null;
         let scannedProduct = { name: '', qta: '' };
+        let itemsToTransfer = []; // Prodotti presi da trasferire
 
-        // ICONE CATEGORIE
-        const catIcons = {
-            'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦',
-            'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦'
-        };
+        const catIcons = { 'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦', 'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦' };
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem('myfridge_auth') === 'true') {
-                nav('frigo');
-            } else {
-                nav('login');
-            }
+            if (localStorage.getItem('myfridge_auth') === 'true') nav('frigo'); else nav('login');
         });
 
         function checkPin() {
@@ -270,7 +251,6 @@
                 document.getElementById('pin-input').value = '';
             }
         }
-
         function logout() { localStorage.removeItem('myfridge_auth'); nav('login'); }
 
         function nav(vista) {
@@ -281,9 +261,7 @@
                 bottomNav.classList.add('hidden');
                 document.getElementById('header-title').innerText = "Login Richiesto";
                 return;
-            } else {
-                bottomNav.classList.remove('hidden');
-            }
+            } else { bottomNav.classList.remove('hidden'); }
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const items = document.querySelectorAll('.nav-item');
@@ -300,53 +278,9 @@
             if(vista === 'scanner') startScanner(); else stopScanner();
         }
 
-        /* --- LOGICA RICERCA --- */
-        function onSearch(val) {
-            searchTerm = val.toLowerCase();
-            loadFrigo();
-        }
+        function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
 
-        /* --- LOGICA SCANNER --- */
-        function startScanner() {
-            document.getElementById('result-card').style.display = 'none';
-            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
-            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
-                .catch(err => document.getElementById('scan-status').innerText = "Errore Camera");
-        }
-        function stopScanner() {
-            if(html5QrcodeScanner && html5QrcodeScanner.isScanning) html5QrcodeScanner.stop().catch(err => console.log(err));
-        }
-        async function onScanSuccess(decodedText) {
-            html5QrcodeScanner.stop(); 
-            document.getElementById('scan-status').innerText = "Trovato! Ricerca...";
-            try {
-                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
-                const data = await res.json();
-                if (data.status === 1) {
-                    const p = data.product;
-                    scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`, qta: p.quantity || "1 pz" };
-                    document.getElementById('result-name').innerText = scannedProduct.name;
-                    document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100";
-                    document.getElementById('result-card').style.display = 'block';
-                } else {
-                    document.getElementById('scan-status').innerText = "Non trovato.";
-                    setTimeout(() => startScanner(), 2000);
-                }
-            } catch (e) { document.getElementById('scan-status').innerText = "Errore rete."; }
-        }
-        function onScanFailure(error) {}
-        
-        async function addToFromScan(dest) {
-            if(!scannedProduct.name) return;
-            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
-            const payload = dest === 'frigo' 
-                ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: oggi.toISOString().split('T')[0], categoria: 'altro' }
-                : { nome: scannedProduct.name, quantita: scannedProduct.qta };
-            await fetch(`${API}/${dest === 'frigo' ? 'frigo' : 'carrello'}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            nav(dest);
-        }
-
+        /* --- FRIGO --- */
         function setFilter(tipo) {
             currentFilter = tipo;
             document.querySelectorAll('.chip').forEach(btn => btn.classList.remove('active'));
@@ -359,15 +293,10 @@
             let data = await res.json();
             const div = document.getElementById('lista-frigo');
             div.innerHTML = '';
-
             const oggi = new Date();
             
-            // 1. FILTRO RICERCA
-            if (searchTerm) {
-                data = data.filter(item => item.nome.toLowerCase().includes(searchTerm));
-            }
+            if (searchTerm) data = data.filter(item => item.nome.toLowerCase().includes(searchTerm));
 
-            // 2. FILTRI SCADENZA
             if (currentFilter === 'scadenza') {
                 data = data.filter(item => {
                     if (!item.scadenza) return false;
@@ -416,9 +345,8 @@
             const slider = document.getElementById(`slider-${id}`);
             slider.style.background = `linear-gradient(to right, ${color} ${val}%, #444 ${val}%)`;
             slider.style.accentColor = color;
-            const percText = document.getElementById(`perc-text-${id}`);
-            percText.innerText = val + '%';
-            percText.style.color = color;
+            const pt = document.getElementById(`perc-text-${id}`);
+            pt.innerText = val + '%'; pt.style.color = color;
             document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
         }
         async function confirmSliderUpdate(id) {
@@ -438,20 +366,39 @@
             document.getElementById('f-nome').value = '';
             loadFrigo();
         }
-        
+
+        /* --- CARRELLO & NUOVA LOGICA TRASFERIMENTO --- */
         async function loadCarrello() {
             const res = await fetch(`${API}/carrello`);
             const data = await res.json();
             const div = document.getElementById('lista-carrello');
             div.innerHTML = '';
+            
+            if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Carrello vuoto.</div>`; return; }
+
             data.forEach(item => {
+                const isPreso = item.preso;
+                const textDec = isPreso ? 'text-decoration: line-through; color: #666;' : '';
+                const iconColor = isPreso ? '#666' : '#00d4b1';
+                const iconName = isPreso ? 'undo' : 'check_circle';
+                
                 div.innerHTML += `
-                <div class="item" style="border-left: 3px solid #00d4b1;">
-                    <div class="item-info"><h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p></div>
-                    <button onclick="openModal('${item._id}', 'carrello')" class="btn-icon" style="color:#00d4b1"><span class="material-icons-round">check_circle</span></button>
+                <div class="item" style="border-left: 3px solid ${iconColor}; opacity: ${isPreso ? '0.6' : '1'};">
+                    <div class="item-info" style="${textDec}">
+                        <h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p>
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <button onclick="togglePreso('${item._id}', ${!isPreso})" class="btn-icon" style="color:${iconColor}">
+                            <span class="material-icons-round" style="font-size:26px;">${iconName}</span>
+                        </button>
+                        <button onclick="openModal('${item._id}', 'carrello')" class="btn-icon btn-delete" style="padding: 6px;">
+                            <span class="material-icons-round" style="font-size:18px;">delete</span>
+                        </button>
+                    </div>
                 </div>`;
             });
         }
+
         async function addCarrello() {
             const nome = document.getElementById('c-nome').value;
             if(!nome) return;
@@ -460,23 +407,151 @@
             loadCarrello();
         }
 
+        // Tasto per spuntare "Preso" o "Annulla"
+        async function togglePreso(id, status) {
+            await fetch(`${API}/carrello/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ preso: status }) });
+            loadCarrello();
+        }
+
+        // Tasto "Concludi Spesa"
+        async function askSvuotaAdvanced() {
+            const res = await fetch(`${API}/carrello`);
+            const cart = await res.json();
+            itemsToTransfer = cart.filter(i => i.preso);
+
+            const modal = document.getElementById('modal-confirm');
+            const btns = document.getElementById('modal-confirm-btns');
+
+            if (itemsToTransfer.length > 0) {
+                document.getElementById('modal-title').innerText = "Spesa Finita!";
+                document.getElementById('modal-text').innerText = `Hai spuntato ${itemsToTransfer.length} prodotti. Vuoi spostarli direttamente nel frigo prima di svuotare il carrello?`;
+                btns.innerHTML = `
+                    <button onclick="closeModal()" class="btn-cancel" style="flex:1;">Annulla</button>
+                    <button onclick="executeSvuota(false)" class="btn-cancel" style="flex:1; border-color:#ff4b4b; color:#ff4b4b;">No, Svuota e basta</button>
+                    <button onclick="openTransferModal()" class="btn-confirm" style="flex:1.5;">Sì, Sposta nel Frigo</button>
+                `;
+            } else {
+                document.getElementById('modal-title').innerText = "Svuotare tutto?";
+                document.getElementById('modal-text').innerText = "Non hai spuntato nessun prodotto. Sei sicuro di voler cancellare tutta la lista della spesa?";
+                btns.innerHTML = `
+                    <button onclick="closeModal()" class="btn-cancel">Annulla</button>
+                    <button onclick="executeSvuota(false)" class="btn-confirm" style="background:#ff4b4b;">Sì, Cancella</button>
+                `;
+            }
+            modal.style.display = 'flex';
+        }
+
+        async function executeSvuota(withTransfer) {
+            closeModal();
+            if(!withTransfer) {
+                await fetch(`${API}/carrello`, { method: 'DELETE' });
+                loadCarrello();
+            }
+        }
+
+        // Apre il pannello per compilare i dati dei prodotti presi
+        function openTransferModal() {
+            closeModal();
+            const listDiv = document.getElementById('transfer-list');
+            listDiv.innerHTML = '';
+            
+            itemsToTransfer.forEach((item, index) => {
+                listDiv.innerHTML += `
+                <div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                    <strong style="display:block; margin-bottom:10px; color:#00d4b1; font-size:16px;">${item.nome}</strong>
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <input type="text" id="trans-qta-${index}" value="${item.quantita}" style="width:40%; padding:10px; margin:0;" placeholder="Qtà">
+                        <select id="trans-cat-${index}" style="width:60%; padding:10px; margin:0;">
+                            <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option>
+                            <option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option>
+                            <option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option>
+                            <option value="bevande">🥤 Bevande</option>
+                        </select>
+                    </div>
+                    <input type="date" id="trans-scad-${index}" style="padding:10px; margin:0; width:100%;">
+                </div>`;
+            });
+            document.getElementById('modal-transfer').style.display = 'flex';
+        }
+
+        function closeTransferModal() { document.getElementById('modal-transfer').style.display = 'none'; }
+
+        // Conferma il trasferimento e pulisce il carrello
+        async function confirmTransferAndEmpty() {
+            for(let i=0; i<itemsToTransfer.length; i++) {
+                const qta = document.getElementById(`trans-qta-${i}`).value;
+                const cat = document.getElementById(`trans-cat-${i}`).value;
+                const scad = document.getElementById(`trans-scad-${i}`).value;
+
+                await fetch(`${API}/frigo`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nome: itemsToTransfer[i].nome, quantita: qta, categoria: cat, scadenza: scad })
+                });
+            }
+            // Svuota carrello finale
+            await fetch(`${API}/carrello`, { method: 'DELETE' });
+            closeTransferModal();
+            nav('frigo'); // Torna al frigo per vedere il risultato!
+        }
+
+        /* --- LOGICA MODALI (Cancella singolo) --- */
         function openModal(id, type) {
             itemToDeleteId = id; deleteType = type;
             const modal = document.getElementById('modal-confirm');
-            if(type === 'svuota') { document.getElementById('modal-title').innerText="Svuotare?"; document.getElementById('modal-text').innerText="Cancellerai tutta la lista."; }
-            else if(type === 'carrello') { document.getElementById('modal-title').innerText="Preso?"; document.getElementById('modal-text').innerText="Confermi di averlo preso?"; }
-            else { document.getElementById('modal-title').innerText="Eliminare?"; document.getElementById('modal-text').innerText="L'azione è irreversibile."; }
+            const btns = document.getElementById('modal-confirm-btns');
+            
+            document.getElementById('modal-title').innerText="Eliminare?"; 
+            document.getElementById('modal-text').innerText="L'azione è irreversibile.";
+            btns.innerHTML = `
+                <button onclick="closeModal()" class="btn-cancel">No</button>
+                <button onclick="confirmAction()" class="btn-confirm" style="background:#ff4b4b;">Sì, Elimina</button>
+            `;
             modal.style.display = 'flex';
         }
         function closeModal() { document.getElementById('modal-confirm').style.display = 'none'; }
+        
         async function confirmAction() {
             if (deleteType === 'frigo') await fetch(`${API}/frigo/${itemToDeleteId}`, { method: 'DELETE' });
             if (deleteType === 'carrello') await fetch(`${API}/carrello/${itemToDeleteId}`, { method: 'DELETE' });
-            if (deleteType === 'svuota') await fetch(`${API}/carrello`, { method: 'DELETE' });
             closeModal();
             if(deleteType === 'frigo') loadFrigo(); else loadCarrello();
         }
-        function askSvuota() { openModal(0, 'svuota'); }
+
+        /* --- SCANNER (Ripristinato) --- */
+        function startScanner() {
+            document.getElementById('result-card').style.display = 'none';
+            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
+            if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
+                .catch(err => document.getElementById('scan-status').innerText = "Errore Camera");
+        }
+        function stopScanner() { if(html5QrcodeScanner && html5QrcodeScanner.isScanning) html5QrcodeScanner.stop().catch(e=>console.log(e)); }
+        async function onScanSuccess(decodedText) {
+            html5QrcodeScanner.stop(); 
+            document.getElementById('scan-status').innerText = "Trovato! Ricerca...";
+            try {
+                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+                const data = await res.json();
+                if (data.status === 1) {
+                    const p = data.product;
+                    scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`, qta: p.quantity || "1 pz" };
+                    document.getElementById('result-name').innerText = scannedProduct.name;
+                    document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100";
+                    document.getElementById('result-card').style.display = 'block';
+                } else {
+                    document.getElementById('scan-status').innerText = "Non trovato."; setTimeout(() => startScanner(), 2000);
+                }
+            } catch (e) { document.getElementById('scan-status').innerText = "Errore rete."; }
+        }
+        function onScanFailure(error) {}
+        async function addToFromScan(dest) {
+            if(!scannedProduct.name) return;
+            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
+            const payload = dest === 'frigo' ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: oggi.toISOString().split('T')[0], categoria: 'altro' } : { nome: scannedProduct.name, quantita: scannedProduct.qta };
+            await fetch(`${API}/${dest === 'frigo' ? 'frigo' : 'carrello'}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            nav(dest);
+        }
     </script>
 </body>
 </html>
