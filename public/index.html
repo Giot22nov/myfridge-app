@@ -86,8 +86,7 @@
         <div class="modal-box">
             <h3 id="modal-title" style="margin-top:0; color:white;">Confermi?</h3>
             <p id="modal-text" style="color:#aaa;">L'azione è irreversibile.</p>
-            <div class="modal-btns" id="modal-confirm-btns">
-                </div>
+            <div class="modal-btns" id="modal-confirm-btns"></div>
         </div>
     </div>
 
@@ -95,10 +94,7 @@
         <div class="modal-box">
             <h3 style="margin-top:0; color:white;">Completa per il Frigo</h3>
             <p style="color:#aaa; font-size: 13px; margin-bottom: 15px;">Inserisci data e categoria per i prodotti che hai preso.</p>
-            
-            <div id="transfer-list" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;">
-                </div>
-            
+            <div id="transfer-list" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;"></div>
             <div class="modal-btns">
                 <button onclick="closeTransferModal()" class="btn-cancel">Annulla</button>
                 <button onclick="confirmTransferAndEmpty()" class="btn-confirm">Salva & Svuota</button>
@@ -127,12 +123,9 @@
                 <div class="row">
                     <input type="text" id="f-nome" placeholder="Nome (es. Latte)">
                     <select id="f-cat" style="width: 40%;">
-                        <option value="altro">📦 Altro</option>
-                        <option value="carne">🥩 Carne</option>
-                        <option value="pesce">🐟 Pesce</option>
-                        <option value="verdura">🥦 Verdura</option>
-                        <option value="frutta">🍎 Frutta</option>
-                        <option value="latticini">🧀 Latticini</option>
+                        <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option>
+                        <option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option>
+                        <option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option>
                         <option value="bevande">🥤 Bevande</option>
                     </select>
                 </div>
@@ -142,18 +135,15 @@
                 </div>
                 <button onclick="addFrigo()" class="btn-primary" style="margin-top: 10px;">Aggiungi</button>
             </div>
-
             <div class="search-bar">
                 <span class="material-icons-round search-icon">search</span>
                 <input type="search" id="search-input" placeholder="Cerca nel frigo..." oninput="onSearch(this.value)">
             </div>
-
             <div class="filter-scroll">
                 <button class="chip active" onclick="setFilter('tutti')" id="btn-tutti">Tutti</button>
                 <button class="chip" onclick="setFilter('scadenza')" id="btn-scadenza">⚠️ In Scadenza</button>
                 <button class="chip" onclick="setFilter('finiti')" id="btn-finiti">📉 Quasi Finiti</button>
             </div>
-
             <div id="lista-frigo"></div>
         </div>
 
@@ -162,18 +152,22 @@
                 <div class="card-title">Scannerizza Barcode</div>
                 <div id="reader"></div>
                 <p id="scan-status" style="color: #666; font-size: 12px;">Inquadra un codice a barre...</p>
+                
                 <div id="result-card">
                     <img id="result-img" src="" alt="Prodotto">
                     <h3 id="result-name" style="margin: 5px 0;">Nome Prodotto</h3>
                     <p id="result-brand" style="color: #aaa; font-size: 12px; margin-bottom: 15px;">Marca</p>
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <button onclick="addToFromScan('frigo')" class="btn-primary btn-scan-action">
-                            <span class="material-icons-round" style="font-size:16px">kitchen</span> In Frigo
+                            <span class="material-icons-round" style="font-size:16px">kitchen</span> Frigo
                         </button>
                         <button onclick="addToFromScan('spesa')" class="btn-primary btn-scan-action" style="background: white; color: black;">
-                            <span class="material-icons-round" style="font-size:16px">shopping_cart</span> In Spesa
+                            <span class="material-icons-round" style="font-size:16px">shopping_cart</span> Spesa
                         </button>
                     </div>
+                    <button onclick="cancelScan()" class="btn-cancel" style="width: 100%; margin-top: 15px;">
+                        <span class="material-icons-round" style="font-size:16px">refresh</span> Scansiona un altro
+                    </button>
                 </div>
             </div>
         </div>
@@ -186,11 +180,9 @@
                     <button onclick="addCarrello()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button>
                 </div>
             </div>
-            
             <button onclick="askSvuotaAdvanced()" style="background: #262730; color: #00d4b1; border: 1px solid #00d4b1; margin-bottom: 20px;">
                 <span class="material-icons-round" style="font-size:18px;">shopping_bag</span> Concludi Spesa (Svuota)
             </button>
-            
             <div id="lista-carrello"></div>
         </div>
 
@@ -230,9 +222,13 @@
         let itemToDeleteId = null, deleteType = null;
         let currentFilter = 'tutti';
         let searchTerm = '';
+        
+        // VARIABILI SCANNER NUOVE
         let html5QrcodeScanner = null;
+        let isScanning = false; 
+        
         let scannedProduct = { name: '', qta: '' };
-        let itemsToTransfer = []; // Prodotti presi da trasferire
+        let itemsToTransfer = []; 
 
         const catIcons = { 'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦', 'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦' };
 
@@ -275,10 +271,105 @@
 
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
-            if(vista === 'scanner') startScanner(); else stopScanner();
+            
+            // Gestione Sicura fotocamera
+            if(vista === 'scanner') {
+                startScanner();
+            } else {
+                stopScanner();
+            }
         }
 
         function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
+
+        /* ================================================================= */
+        /* --- LOGICA SCANNER AGGIORNATA (ANTI-BLOCCO) --- */
+        /* ================================================================= */
+
+        function startScanner() {
+            document.getElementById('result-card').style.display = 'none';
+            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
+            
+            // Se c'è già uno scanner in corso, fermati.
+            if (isScanning) return;
+
+            // Se c'è un rimasuglio di scanner vecchio, puliscilo
+            if (html5QrcodeScanner) {
+                try { html5QrcodeScanner.clear(); } catch(e){}
+                html5QrcodeScanner = null;
+            }
+
+            // Crea un'istanza totalmente nuova
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            html5QrcodeScanner.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                onScanSuccess, 
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+            }).catch(err => {
+                document.getElementById('scan-status').innerText = "Errore Fotocamera. Controlla i permessi.";
+            });
+        }
+
+        async function stopScanner() {
+            if(html5QrcodeScanner && isScanning) {
+                try {
+                    await html5QrcodeScanner.stop();
+                    html5QrcodeScanner.clear();
+                } catch(e) { console.log("Errore stop", e); }
+                isScanning = false;
+                html5QrcodeScanner = null; // Distruzione completa
+            }
+        }
+
+        async function onScanSuccess(decodedText) {
+            if (!isScanning) return; // Evita letture multiple
+
+            // 1. Spegni la fotocamera SUBITO per sbloccarla
+            await stopScanner();
+            
+            document.getElementById('scan-status').innerText = "Codice trovato! Ricerca in corso...";
+            
+            try {
+                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+                const data = await res.json();
+                if (data.status === 1) {
+                    const p = data.product;
+                    scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`, qta: p.quantity || "1 pz" };
+                    document.getElementById('result-name').innerText = scannedProduct.name;
+                    document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100";
+                    document.getElementById('result-card').style.display = 'block';
+                } else {
+                    document.getElementById('scan-status').innerText = "Prodotto non trovato nel database.";
+                    setTimeout(() => startScanner(), 2000); // Riavvia in automatico
+                }
+            } catch (e) { 
+                document.getElementById('scan-status').innerText = "Errore connessione di rete.";
+                setTimeout(() => startScanner(), 2000);
+            }
+        }
+
+        function onScanFailure(error) {}
+
+        function cancelScan() {
+            // Tasto "Scansiona un altro": riavvia tutto da zero.
+            startScanner();
+        }
+
+        async function addToFromScan(dest) {
+            if(!scannedProduct.name) return;
+            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
+            const payload = dest === 'frigo' 
+                ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: oggi.toISOString().split('T')[0], categoria: 'altro' } 
+                : { nome: scannedProduct.name, quantita: scannedProduct.qta };
+            await fetch(`${API}/${dest === 'frigo' ? 'frigo' : 'carrello'}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            nav(dest);
+        }
+
+        /* ================================================================= */
 
         /* --- FRIGO --- */
         function setFilter(tipo) {
@@ -367,7 +458,7 @@
             loadFrigo();
         }
 
-        /* --- CARRELLO & NUOVA LOGICA TRASFERIMENTO --- */
+        /* --- CARRELLO & TRASFERIMENTO --- */
         async function loadCarrello() {
             const res = await fetch(`${API}/carrello`);
             const data = await res.json();
@@ -407,13 +498,11 @@
             loadCarrello();
         }
 
-        // Tasto per spuntare "Preso" o "Annulla"
         async function togglePreso(id, status) {
             await fetch(`${API}/carrello/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ preso: status }) });
             loadCarrello();
         }
 
-        // Tasto "Concludi Spesa"
         async function askSvuotaAdvanced() {
             const res = await fetch(`${API}/carrello`);
             const cart = await res.json();
@@ -449,7 +538,6 @@
             }
         }
 
-        // Apre il pannello per compilare i dati dei prodotti presi
         function openTransferModal() {
             closeModal();
             const listDiv = document.getElementById('transfer-list');
@@ -476,7 +564,6 @@
 
         function closeTransferModal() { document.getElementById('modal-transfer').style.display = 'none'; }
 
-        // Conferma il trasferimento e pulisce il carrello
         async function confirmTransferAndEmpty() {
             for(let i=0; i<itemsToTransfer.length; i++) {
                 const qta = document.getElementById(`trans-qta-${i}`).value;
@@ -489,13 +576,12 @@
                     body: JSON.stringify({ nome: itemsToTransfer[i].nome, quantita: qta, categoria: cat, scadenza: scad })
                 });
             }
-            // Svuota carrello finale
             await fetch(`${API}/carrello`, { method: 'DELETE' });
             closeTransferModal();
-            nav('frigo'); // Torna al frigo per vedere il risultato!
+            nav('frigo');
         }
 
-        /* --- LOGICA MODALI (Cancella singolo) --- */
+        /* --- MODALI BASE --- */
         function openModal(id, type) {
             itemToDeleteId = id; deleteType = type;
             const modal = document.getElementById('modal-confirm');
@@ -516,41 +602,6 @@
             if (deleteType === 'carrello') await fetch(`${API}/carrello/${itemToDeleteId}`, { method: 'DELETE' });
             closeModal();
             if(deleteType === 'frigo') loadFrigo(); else loadCarrello();
-        }
-
-        /* --- SCANNER (Ripristinato) --- */
-        function startScanner() {
-            document.getElementById('result-card').style.display = 'none';
-            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            if(!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
-            html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
-                .catch(err => document.getElementById('scan-status').innerText = "Errore Camera");
-        }
-        function stopScanner() { if(html5QrcodeScanner && html5QrcodeScanner.isScanning) html5QrcodeScanner.stop().catch(e=>console.log(e)); }
-        async function onScanSuccess(decodedText) {
-            html5QrcodeScanner.stop(); 
-            document.getElementById('scan-status').innerText = "Trovato! Ricerca...";
-            try {
-                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
-                const data = await res.json();
-                if (data.status === 1) {
-                    const p = data.product;
-                    scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`, qta: p.quantity || "1 pz" };
-                    document.getElementById('result-name').innerText = scannedProduct.name;
-                    document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100";
-                    document.getElementById('result-card').style.display = 'block';
-                } else {
-                    document.getElementById('scan-status').innerText = "Non trovato."; setTimeout(() => startScanner(), 2000);
-                }
-            } catch (e) { document.getElementById('scan-status').innerText = "Errore rete."; }
-        }
-        function onScanFailure(error) {}
-        async function addToFromScan(dest) {
-            if(!scannedProduct.name) return;
-            const oggi = new Date(); oggi.setDate(oggi.getDate() + 7);
-            const payload = dest === 'frigo' ? { nome: scannedProduct.name, quantita: scannedProduct.qta, scadenza: oggi.toISOString().split('T')[0], categoria: 'altro' } : { nome: scannedProduct.name, quantita: scannedProduct.qta };
-            await fetch(`${API}/${dest === 'frigo' ? 'frigo' : 'carrello'}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            nav(dest);
         }
     </script>
 </body>
