@@ -224,7 +224,7 @@
             <div class="card" style="text-align: center;">
                 <div class="card-title">Scannerizza Barcode</div>
                 <div id="reader"></div>
-                <p id="scan-status" style="color: #666; font-size: 12px;">Inquadra un codice a barre...</p>
+                <p id="scan-status" style="color: #666; font-size: 12px; margin-bottom: 10px;">Inquadra un codice a barre...</p>
                 
                 <div id="result-card">
                     <img id="result-img" src="" alt="Prodotto">
@@ -296,14 +296,15 @@
         let currentFilter = 'tutti';
         let searchTerm = '';
         
+        // SCANNER LOGIC RE-WRITTEN
         let html5QrcodeScanner = null;
-        let isScanning = false; 
+        let isCameraActive = false; 
+        let scanPaused = false; // "Pausa Logica" per non bloccare l'hardware
         
         let scannedProduct = { name: '', qta: '' };
         let itemsToTransfer = []; 
         let scanDest = '';
         
-        // Memoria per l'editing
         let allFrigoItems = [];
         let itemToEditId = null;
 
@@ -349,33 +350,47 @@
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
             
-            if(vista === 'scanner') startScanner(); else stopScanner();
+            if(vista === 'scanner') {
+                startScanner();
+            } else {
+                stopScannerHard(); // Spegne la telecamera solo quando esci dalla scheda
+            }
         }
 
-        function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
+        /* ================================================================= */
+        /* --- LOGICA SCANNER ANTIBLOCCO --- */
+        /* ================================================================= */
 
-        /* --- SCANNER --- */
         function startScanner() {
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            if (isScanning) return; 
+            scanPaused = false; // Togliamo il tappo dalle orecchie
+            
+            if (isCameraActive) return; // Motore già acceso, non serve fare nulla
+            
             if (!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
             
             html5QrcodeScanner.start(
                 { facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure
-            ).then(() => { isScanning = true; }).catch(err => { document.getElementById('scan-status').innerText = "Errore Fotocamera."; });
+            ).then(() => { 
+                isCameraActive = true; 
+            }).catch(err => { 
+                document.getElementById('scan-status').innerText = "Errore Fotocamera."; 
+            });
         }
 
-        async function stopScanner() {
-            if(html5QrcodeScanner && isScanning) {
+        // Spegne fisicamente la telecamera
+        async function stopScannerHard() {
+            if(html5QrcodeScanner && isCameraActive) {
                 try { await html5QrcodeScanner.stop(); } catch(e) {}
-                isScanning = false;
+                isCameraActive = false;
+                scanPaused = false;
             }
         }
 
         async function onScanSuccess(decodedText) {
-            if (!isScanning) return; 
-            await stopScanner();
+            if (scanPaused) return; // Se abbiamo già trovato un codice, ignora gli altri per ora!
+            scanPaused = true; // Mettiamo il "tappo alle orecchie" (Pausa logica)
             
             document.getElementById('scan-status').innerText = "Trovato! Ricerca in corso...";
             try {
@@ -389,13 +404,21 @@
                     document.getElementById('result-card').style.display = 'block';
                 } else {
                     document.getElementById('scan-status').innerText = "Prodotto non trovato nel database.";
-                    setTimeout(() => startScanner(), 2000);
+                    // Se non lo trova, togliamo la pausa in automatico per fargli riprovare
+                    setTimeout(() => { scanPaused = false; startScanner(); }, 2000); 
                 }
-            } catch (e) { document.getElementById('scan-status').innerText = "Errore di rete."; setTimeout(() => startScanner(), 2000); }
+            } catch (e) { 
+                document.getElementById('scan-status').innerText = "Errore di rete."; 
+                setTimeout(() => { scanPaused = false; startScanner(); }, 2000); 
+            }
         }
 
         function onScanFailure(error) {}
-        function cancelScan() { startScanner(); }
+
+        function cancelScan() { 
+            // Tasto Scansiona un Altro: toglie la pausa e si riparte istantaneamente!
+            startScanner(); 
+        }
 
         /* --- MODIFICA DOPO SCAN --- */
         function openScanEditModal(dest) {
@@ -447,6 +470,8 @@
             document.getElementById('result-card').style.display = 'none';
             nav(scanDest); 
         }
+
+        function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
 
         /* --- FRIGO --- */
         function setFilter(tipo) {
@@ -513,40 +538,27 @@
             });
         }
 
-        /* --- MODIFICA OGGETTI ESISTENTI NEL FRIGO --- */
         function openEditFrigoModal(id) {
             const item = allFrigoItems.find(i => i._id === id);
             if(!item) return;
             itemToEditId = id;
-            
             document.getElementById('edit-f-nome').value = item.nome || '';
             document.getElementById('edit-f-qta').value = item.quantita || '';
             document.getElementById('edit-f-cat').value = item.categoria || 'altro';
             document.getElementById('edit-f-scad').value = item.scadenza || '';
-            
             document.getElementById('modal-edit-frigo').style.display = 'flex';
         }
-
         function closeEditFrigoModal() { document.getElementById('modal-edit-frigo').style.display = 'none'; }
-
         async function confirmEditFrigo() {
             const nome = document.getElementById('edit-f-nome').value;
             const qta = document.getElementById('edit-f-qta').value;
             const cat = document.getElementById('edit-f-cat').value;
             const scad = document.getElementById('edit-f-scad').value;
             if(!nome) return;
-
-            await fetch(`${API}/frigo/${itemToEditId}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ nome, quantita: qta, categoria: cat, scadenza: scad })
-            });
-
+            await fetch(`${API}/frigo/${itemToEditId}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, categoria: cat, scadenza: scad }) });
             closeEditFrigoModal();
             loadFrigo();
         }
-
-        /* --- FINE MODIFICA FRIGO --- */
 
         function onSliderDrag(id, val) {
             const color = val > 50 ? '#00d4b1' : '#ff4b4b';
