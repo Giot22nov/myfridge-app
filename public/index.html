@@ -57,7 +57,6 @@
         .btn-cancel { background: transparent; border: 1px solid #555; color: white; flex: 1; }
         .btn-confirm { background: #00d4b1; color: white; flex: 1; }
 
-        /* SCANNER SPECIFICO */
         #reader { width: 100%; min-height: 250px; border-radius: 12px; overflow: hidden; background: black; margin-bottom: 15px; border: 2px solid #333; position: relative; }
         #result-card { display: none; text-align: center; background: #31333F; padding: 15px; border-radius: 12px; border: 1px solid #00d4b1; }
         #result-img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; background: white; margin-bottom: 10px; }
@@ -297,10 +296,8 @@
         let currentFilter = 'tutti';
         let searchTerm = '';
         
-        // --- VARIABILI SCANNER ---
+        // --- LA NUOVA MENTE DELLO SCANNER ---
         let html5QrCode = null;
-        let isCameraActive = false; 
-        let isProcessingScan = false; // Il vero "Lucchetto logico"
         
         let scannedProduct = { name: '', qta: '' };
         let itemsToTransfer = []; 
@@ -353,7 +350,7 @@
             if(vista === 'frigo') loadFrigo();
             if(vista === 'spesa') loadCarrello();
             
-            // GESTIONE TELECAMERA NELLE TAB
+            // Gestione accensione e spegnimento radicale
             if(vista === 'scanner') {
                 startScanner();
             } else {
@@ -362,49 +359,50 @@
         }
 
         /* ================================================================= */
-        /* --- LA VERA LOGICA SCANNER INSTANCABILE --- */
+        /* --- MOTORE SCANNER "DISTRUGGI E RICREA" --- */
         /* ================================================================= */
 
-        function startScanner() {
+        async function startScanner() {
             document.getElementById('result-card').style.display = 'none';
-            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            isProcessingScan = false; // Togliamo il lucchetto!
-
-            if (isCameraActive) return; // Se il motore è già acceso, non serve accenderlo 2 volte
+            document.getElementById('scan-status').innerText = "Avvio fotocamera...";
             
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
+            // 1. Spazza via tutto quello che c'era prima per sbloccare la cache
+            await stopScannerHard();
+            
+            // 2. Crea un lettore completamente nuovo e vergine
+            html5QrCode = new Html5Qrcode("reader");
+            
+            try {
+                await html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                    onScanSuccess
+                );
+                document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
+            } catch (err) {
+                document.getElementById('scan-status').innerText = "Errore: Consenti l'uso della fotocamera nel browser.";
             }
-            
-            html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                onScanSuccess, 
-                onScanFailure
-            ).then(() => { 
-                isCameraActive = true; 
-            }).catch(err => { 
-                document.getElementById('scan-status').innerText = "Errore: Consenti l'uso della fotocamera."; 
-            });
         }
 
-        function stopScannerHard() {
-            if (html5QrCode && isCameraActive) {
-                html5QrCode.stop().then(() => {
-                    isCameraActive = false;
-                    isProcessingScan = false;
-                }).catch(err => console.log(err));
+        async function stopScannerHard() {
+            if (html5QrCode) {
+                try {
+                    await html5QrCode.stop(); // Spegne la lente
+                } catch (e) { }
+                try {
+                    html5QrCode.clear(); // Rimuove l'HTML e cancella la cache "anti-spam"
+                } catch (e) { }
+                html5QrCode = null; // Distrugge l'oggetto
             }
         }
 
         async function onScanSuccess(decodedText) {
-            // SE IL LUCCHETTO È CHIUSO (stiamo già cercando o mostrando un prodotto), IGNORA I NUOVI LETTI DALLA CAM!
-            if (isProcessingScan) return; 
+            document.getElementById('scan-status').innerText = "Codice letto! Fermo l'obiettivo...";
             
-            // CHIUDIAMO IL LUCCHETTO. (La telecamera continua a riprendere, ma non fa più nulla)
-            isProcessingScan = true; 
+            // SPEGNIMENTO IMMEDIATO AL SUCCESSO! Questo blocca l'hardware e ci protegge dai bug
+            await stopScannerHard();
             
-            document.getElementById('scan-status').innerText = "🔍 Cerco: " + decodedText + "...";
+            document.getElementById('scan-status').innerText = "🔍 Cerco nel database: " + decodedText + "...";
             
             try {
                 const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
@@ -416,36 +414,24 @@
                     document.getElementById('result-name').innerText = scannedProduct.name;
                     document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100?text=No+Img";
                     
-                    document.getElementById('scan-status').innerText = "Trovato!";
+                    document.getElementById('scan-status').innerText = "Trovato! 🎉";
                     document.getElementById('result-card').style.display = 'block';
-                    // Nota: NON riapriamo il lucchetto qui. Resta chiuso finché non premi "Scarta" o "Salva".
                 } else {
-                    document.getElementById('scan-status').innerText = "❌ Non trovato. Riprova con un altro!";
-                    // Se non lo trova, sblocchiamo dopo 2 secondi
-                    setTimeout(() => { 
-                        isProcessingScan = false; 
-                        document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-                    }, 2000);
+                    document.getElementById('scan-status').innerText = "❌ Non trovato. Riavvio fotocamera...";
+                    setTimeout(() => startScanner(), 2000); // Riavvio pulito
                 }
             } catch (e) { 
-                document.getElementById('scan-status').innerText = "⚠️ Errore di connessione."; 
-                setTimeout(() => { 
-                    isProcessingScan = false; 
-                    document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-                }, 2000); 
+                document.getElementById('scan-status').innerText = "⚠️ Errore di connessione a Internet."; 
+                setTimeout(() => startScanner(), 2000); 
             }
         }
 
-        function onScanFailure(error) {
-            // Non fare nulla. Lascia la fotocamera scorrere pulita.
+        function cancelScan() {
+            // Tasto Scarta e riavvia: Fa ripartire il ciclo magico da zero!
+            startScanner(); 
         }
 
-        function cancelScan() {
-            // L'utente ha scartato il prodotto! Nascondiamo la carta e APRIAMO IL LUCCHETTO.
-            document.getElementById('result-card').style.display = 'none';
-            document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            isProcessingScan = false; 
-        }
+        /* ================================================================= */
 
         /* --- MODIFICA DOPO SCAN --- */
         function openScanEditModal(dest) {
@@ -495,7 +481,6 @@
             await fetch(`${API}/${scanDest}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             closeScanEditModal();
             document.getElementById('result-card').style.display = 'none';
-            // Navigando in un'altra scheda, stopScannerHard() farà il suo lavoro spegnendo tutto pulitamente.
             nav(scanDest); 
         }
 
