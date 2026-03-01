@@ -234,6 +234,19 @@
             <div id="lista-ricette"></div>
         </div>
 
+        <div id="view-regole" class="view">
+            <div class="card">
+                <div class="card-title">Guida all'uso</div>
+                <ul class="rules-list">
+                    <li><span class="material-icons-round rule-icon">snooze</span><div class="rule-text"><h4>Server in Standby</h4><p>Dopo 15 minuti pausa. Se lento, attendi.</p></div></li>
+                    <li><span class="material-icons-round rule-icon">qr_code_scanner</span><div class="rule-text"><h4>Scanner</h4><p>Solo per confezionati. Cibo fresco a mano.</p></div></li>
+                    <li><span class="material-icons-round rule-icon">delete_sweep</span><div class="rule-text"><h4>Pulizia</h4><p>Togli dal frigo ciò che finisci!</p></div></li>
+                    <li><span class="material-icons-round rule-icon">sync</span><div class="rule-text"><h4>Sync</h4><p>Ricarica la pagina per vedere modifiche altrui.</p></div></li>
+                </ul>
+                <button onclick="logout()" style="background: #333; color: #aaa; margin-top: 20px; font-size: 12px;">Disconnetti App</button>
+            </div>
+        </div>
+
     </div>
 
     <div id="bottom-nav" class="bottom-nav hidden">
@@ -241,6 +254,7 @@
         <div class="nav-item" onclick="nav('scanner')"><span class="material-icons-round">qr_code_scanner</span><label>Scan</label></div>
         <div class="nav-item" onclick="nav('spesa')"><span class="material-icons-round">shopping_cart</span><label>Spesa</label></div>
         <div class="nav-item" onclick="nav('ricette')"><span class="material-icons-round">restaurant_menu</span><label>Ricette</label></div>
+        <div class="nav-item" onclick="nav('regole')"><span class="material-icons-round">info</span><label>Info</label></div>
     </div>
 
     <script>
@@ -283,12 +297,15 @@
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const items = document.querySelectorAll('.nav-item');
+            
+            // Gestione indici per i 5 bottoni
             if(vista === 'frigo') items[0].classList.add('active');
             if(vista === 'scanner') items[1].classList.add('active');
             if(vista === 'spesa') items[2].classList.add('active');
             if(vista === 'ricette') items[3].classList.add('active');
+            if(vista === 'regole') items[4].classList.add('active');
             
-            const titles = { 'frigo': 'Il Mio Frigo', 'scanner': 'Scannerizza', 'spesa': 'Lista Spesa', 'ricette': 'Ricette Svuota Frigo' };
+            const titles = { 'frigo': 'Il Mio Frigo', 'scanner': 'Scannerizza', 'spesa': 'Lista Spesa', 'ricette': 'Ricette Svuota Frigo', 'regole': 'Guida & Regole' };
             document.getElementById('header-title').innerText = titles[vista];
 
             if(vista === 'frigo') loadFrigo();
@@ -297,7 +314,7 @@
             if(vista === 'scanner') startScanner(); else stopScannerHard();
         }
 
-        /* --- RICETTE (NUOVO) --- */
+        /* --- RICETTE CON GESTIONE ERRORI --- */
         async function getRicette() {
             const div = document.getElementById('lista-ricette');
             div.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><span class="material-icons-round" style="animation: spin 1s linear infinite;">sync</span> Cerco ricette...</div>';
@@ -312,12 +329,18 @@
                 }
                 
                 if (data.error) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">Impossibile contattare il server delle ricette. Controlla la chiave API.</div>`;
+                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">Impossibile contattare il server locale.</div>`;
                     return;
                 }
 
-                if (data.length === 0) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px;">Nessuna ricetta trovata con questi ingredienti.</div>`;
+                // Controllo se l'API blocca la chiave o la quota
+                if (data.status === "failure" || data.code === 401) {
+                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">⚠️ Errore API Spoonacular: Riavvia il server su Render per fargli leggere la chiave!</div>`;
+                    return;
+                }
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    div.innerHTML = `<div style="text-align:center; padding:20px;">Nessuna ricetta trovata con gli ingredienti attuali.</div>`;
                     return;
                 }
 
@@ -335,6 +358,7 @@
                     `;
                 });
             } catch (e) {
+                console.error(e);
                 div.innerHTML = '<div style="text-align:center; padding:20px; color:#ff4b4b;">Errore nel caricamento. Riprova.</div>';
             }
         }
@@ -343,7 +367,7 @@
         async function startScanner() {
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('scan-status').innerText = "Avvio fotocamera...";
-            await stopScannerHard(); // Pulisce cache precedente
+            await stopScannerHard(); 
             
             html5QrCode = new Html5Qrcode("reader");
             try {
@@ -364,7 +388,7 @@
 
         async function onScanSuccess(decodedText) {
             document.getElementById('scan-status').innerText = "Codice letto! Fermo...";
-            await stopScannerHard(); // Spegne istantaneamente!
+            await stopScannerHard(); 
             document.getElementById('scan-status').innerText = "🔍 Cerco: " + decodedText + "...";
             
             try {
