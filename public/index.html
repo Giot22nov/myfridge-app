@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MyFridge App</title>
     
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link href="[https://fonts.googleapis.com/icon?family=Material+Icons+Round](https://fonts.googleapis.com/icon?family=Material+Icons+Round)" rel="stylesheet">
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap)" rel="stylesheet">
+    <script src="[https://unpkg.com/html5-qrcode](https://unpkg.com/html5-qrcode)" type="text/javascript"></script>
 
     <style>
         :root {
@@ -43,12 +43,12 @@
         .item-info p { margin: 0; color: var(--text-sec); font-size: 13px; }
         .urgent { color: #ff4b4b; font-weight: bold; }
 
-        /* RICETTE STYLE */
-        .recipe-card { background: var(--bg-card); border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
-        .recipe-card img { width: 100%; height: 180px; object-fit: cover; }
-        .recipe-info { padding: 15px; }
-        .recipe-info h3 { margin: 0 0 10px 0; font-size: 18px; color: #ffb703; }
-        .recipe-info p { margin: 4px 0; font-size: 13px; color: var(--text-sec); }
+        /* NUOVO: Stile per la rotellina di caricamento */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* RICETTE AI STYLE */
+        .recipe-card { background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.5; }
+        .recipe-card li { margin-bottom: 8px; }
 
         .rules-list { list-style: none; padding: 0; margin: 0; }
         .rules-list li { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; }
@@ -89,69 +89,39 @@
 </head>
 <body>
 
-    <div id="modal-confirm" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="modal-title" style="margin-top:0; color:white;">Confermi?</h3>
-            <p id="modal-text" style="color:#aaa;">L'azione è irreversibile.</p>
-            <div class="modal-btns" id="modal-confirm-btns"></div>
-        </div>
-    </div>
-
+    <div id="modal-confirm" class="modal-overlay"><div class="modal-box"><h3 id="modal-title">Confermi?</h3><p id="modal-text"></p><div class="modal-btns" id="modal-confirm-btns"></div></div></div>
+    
     <div id="modal-edit-frigo" class="modal-overlay">
-        <div class="modal-box">
-            <h3 style="margin-top:0; color:white;">Modifica Prodotto</h3>
+        <div class="modal-box"><h3 style="margin-top:0; color:white;">Modifica Prodotto</h3>
             <div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome</label>
-                <input type="text" id="edit-f-nome" style="margin-bottom: 12px;">
+                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome</label><input type="text" id="edit-f-nome" style="margin-bottom: 12px;">
                 <div style="display:flex; gap:8px; margin-bottom:8px;">
                     <div style="width:40%;"><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Qtà</label><input type="text" id="edit-f-qta" style="width:100%; margin:0;"></div>
                     <div style="width:60%;"><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Cat</label>
-                        <select id="edit-f-cat" style="width:100%; margin:0;">
-                            <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option>
-                        </select>
+                        <select id="edit-f-cat" style="width:100%; margin:0;"><option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option></select>
                     </div>
                 </div>
                 <div><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Scadenza</label><input type="date" id="edit-f-scad" style="margin:0; width:100%;"></div>
             </div>
-            <div class="modal-btns">
-                <button onclick="closeEditFrigoModal()" class="btn-cancel">Annulla</button>
-                <button onclick="confirmEditFrigo()" class="btn-confirm">Salva</button>
-            </div>
+            <div class="modal-btns"><button onclick="closeEditFrigoModal()" class="btn-cancel">Annulla</button><button onclick="confirmEditFrigo()" class="btn-confirm">Salva</button></div>
         </div>
     </div>
 
-    <div id="modal-transfer" class="modal-overlay">
-        <div class="modal-box">
-            <h3 style="margin-top:0; color:white;">Completa per il Frigo</h3>
-            <p style="color:#aaa; font-size: 13px; margin-bottom: 15px;">Inserisci data e categoria.</p>
-            <div id="transfer-list" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;"></div>
-            <div class="modal-btns">
-                <button onclick="closeTransferModal()" class="btn-cancel">Annulla</button>
-                <button onclick="confirmTransferAndEmpty()" class="btn-confirm">Salva & Svuota</button>
-            </div>
-        </div>
-    </div>
-
+    <div id="modal-transfer" class="modal-overlay"><div class="modal-box"><h3 style="margin-top:0; color:white;">Completa per il Frigo</h3><p style="color:#aaa; font-size: 13px; margin-bottom: 15px;">Inserisci data e categoria.</p><div id="transfer-list" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;"></div><div class="modal-btns"><button onclick="closeTransferModal()" class="btn-cancel">Annulla</button><button onclick="confirmTransferAndEmpty()" class="btn-confirm">Salva & Svuota</button></div></div></div>
+    
     <div id="modal-scan-edit" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="scan-edit-title" style="margin-top:0; color:white;">Completa Prodotto</h3>
+        <div class="modal-box"><h3 id="scan-edit-title" style="margin-top:0; color:white;">Completa Prodotto</h3>
             <div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome</label>
-                <input type="text" id="scan-edit-nome" style="margin-bottom: 12px;">
+                <label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Nome</label><input type="text" id="scan-edit-nome" style="margin-bottom: 12px;">
                 <div style="display:flex; gap:8px; margin-bottom:8px;">
                     <div style="width:40%;"><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Qtà</label><input type="text" id="scan-edit-qta" style="width:100%; margin:0;"></div>
                     <div style="width:60%;" id="scan-edit-cat-container"><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Cat</label>
-                        <select id="scan-edit-cat" style="width:100%; margin:0;">
-                            <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option>
-                        </select>
+                        <select id="scan-edit-cat" style="width:100%; margin:0;"><option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option></select>
                     </div>
                 </div>
                 <div id="scan-edit-scad-container"><label style="font-size:12px; color:#aaa; margin-bottom:4px; display:block;">Scadenza</label><input type="date" id="scan-edit-scad" style="margin:0; width:100%;"></div>
             </div>
-            <div class="modal-btns">
-                <button onclick="closeScanEditModal()" class="btn-cancel">Annulla</button>
-                <button onclick="confirmScanEdit()" class="btn-confirm" id="scan-edit-btn-confirm">Salva</button>
-            </div>
+            <div class="modal-btns"><button onclick="closeScanEditModal()" class="btn-cancel">Annulla</button><button onclick="confirmScanEdit()" class="btn-confirm" id="scan-edit-btn-confirm">Salva</button></div>
         </div>
     </div>
 
@@ -174,14 +144,9 @@
                 <div class="card-title">Aggiungi Prodotto</div>
                 <div class="row">
                     <input type="text" id="f-nome" placeholder="Nome (es. Latte)">
-                    <select id="f-cat" style="width: 40%;">
-                        <option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option>
-                    </select>
+                    <select id="f-cat" style="width: 40%;"><option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option></select>
                 </div>
-                <div class="row">
-                    <input type="text" id="f-qta" placeholder="Qtà" style="width: 35%">
-                    <input type="date" id="f-scad">
-                </div>
+                <div class="row"><input type="text" id="f-qta" placeholder="Qtà" style="width: 35%"><input type="date" id="f-scad"></div>
                 <button onclick="addFrigo()" class="btn-primary" style="margin-top: 10px;">Aggiungi</button>
             </div>
             <div class="search-bar"><span class="material-icons-round search-icon">search</span><input type="search" id="search-input" placeholder="Cerca nel frigo..." oninput="onSearch(this.value)"></div>
@@ -198,7 +163,6 @@
                 <div class="card-title">Scannerizza Barcode</div>
                 <div id="reader"></div>
                 <p id="scan-status" style="color: #00d4b1; font-weight: bold; font-size: 13px; margin-bottom: 10px;">Attesa fotocamera...</p>
-                
                 <div id="result-card">
                     <img id="result-img" src="" alt="Prodotto">
                     <h3 id="result-name" style="margin: 5px 0;">Nome Prodotto</h3>
@@ -215,10 +179,7 @@
         <div id="view-spesa" class="view">
             <div class="card">
                 <div class="card-title">Cosa manca?</div>
-                <div class="row">
-                    <input type="text" id="c-nome" placeholder="Prodotto...">
-                    <button onclick="addCarrello()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button>
-                </div>
+                <div class="row"><input type="text" id="c-nome" placeholder="Prodotto..."><button onclick="addCarrello()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button></div>
             </div>
             <button onclick="askSvuotaAdvanced()" style="background: #262730; color: #00d4b1; border: 1px solid #00d4b1; margin-bottom: 20px;"><span class="material-icons-round" style="font-size:18px;">shopping_bag</span> Concludi Spesa (Svuota)</button>
             <div id="lista-carrello"></div>
@@ -227,9 +188,9 @@
         <div id="view-ricette" class="view">
             <div class="card" style="text-align: center;">
                 <span class="material-icons-round" style="font-size: 40px; color: #ffb703; margin-bottom: 10px;">restaurant_menu</span>
-                <h3 style="margin: 0;">Cosa cuciniamo?</h3>
-                <p style="color: #aaa; font-size: 13px; margin-bottom: 15px;">Idee basate su quello che hai in frigo!</p>
-                <button onclick="getRicette()" class="btn-primary" style="background: #ffb703; color: #000;"><span class="material-icons-round">search</span> TROVA RICETTE</button>
+                <h3 style="margin: 0;">Lo Chef Artificiale</h3>
+                <p style="color: #aaa; font-size: 13px; margin-bottom: 15px;">Inventerò una ricetta unica usando il tuo frigo!</p>
+                <button onclick="getRicette()" class="btn-primary" style="background: #ffb703; color: #000; box-shadow: 0 4px 15px rgba(255, 183, 3, 0.4);"><span class="material-icons-round">magic_button</span> CREA RICETTA MAGICA</button>
             </div>
             <div id="lista-ricette"></div>
         </div>
@@ -253,168 +214,93 @@
         <div class="nav-item active" onclick="nav('frigo')"><span class="material-icons-round">kitchen</span><label>Frigo</label></div>
         <div class="nav-item" onclick="nav('scanner')"><span class="material-icons-round">qr_code_scanner</span><label>Scan</label></div>
         <div class="nav-item" onclick="nav('spesa')"><span class="material-icons-round">shopping_cart</span><label>Spesa</label></div>
-        <div class="nav-item" onclick="nav('ricette')"><span class="material-icons-round">restaurant_menu</span><label>Ricette</label></div>
+        <div class="nav-item" onclick="nav('ricette')"><span class="material-icons-round">restaurant_menu</span><label>Chef AI</label></div>
         <div class="nav-item" onclick="nav('regole')"><span class="material-icons-round">info</span><label>Info</label></div>
     </div>
 
     <script>
-        const API = '/api';
-        const CORRECT_PIN = "2211";
-        let itemToDeleteId = null, deleteType = null;
-        let currentFilter = 'tutti', searchTerm = '';
-        
-        let html5QrCode = null;
-        let scannedProduct = { name: '', qta: '' };
-        let itemsToTransfer = [], scanDest = '';
+        const API = '/api'; const CORRECT_PIN = "2211";
+        let itemToDeleteId = null, deleteType = null, currentFilter = 'tutti', searchTerm = '';
+        let html5QrCode = null, scannedProduct = { name: '', qta: '' }, itemsToTransfer = [], scanDest = '';
         let allFrigoItems = [], itemToEditId = null;
 
         const catIcons = { 'carne': '🥩', 'pesce': '🐟', 'verdura': '🥦', 'frutta': '🍎', 'latticini': '🧀', 'bevande': '🥤', 'altro': '📦' };
 
-        document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem('myfridge_auth') === 'true') nav('frigo'); else nav('login');
-        });
+        document.addEventListener("DOMContentLoaded", () => { if (localStorage.getItem('myfridge_auth') === 'true') nav('frigo'); else nav('login'); });
 
-        function checkPin() {
-            if (document.getElementById('pin-input').value === CORRECT_PIN) {
-                localStorage.setItem('myfridge_auth', 'true');
-                document.getElementById('login-error').style.display = 'none';
-                document.getElementById('pin-input').value = '';
-                nav('frigo');
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-                document.getElementById('pin-input').value = '';
-            }
-        }
+        function checkPin() { if (document.getElementById('pin-input').value === CORRECT_PIN) { localStorage.setItem('myfridge_auth', 'true'); document.getElementById('login-error').style.display = 'none'; document.getElementById('pin-input').value = ''; nav('frigo'); } else { document.getElementById('login-error').style.display = 'block'; document.getElementById('pin-input').value = ''; } }
         function logout() { localStorage.removeItem('myfridge_auth'); nav('login'); }
 
         function nav(vista) {
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + vista).classList.add('active');
             const bottomNav = document.getElementById('bottom-nav');
-            
-            if (vista === 'login') { bottomNav.classList.add('hidden'); document.getElementById('header-title').innerText = "Login"; return; } 
-            else { bottomNav.classList.remove('hidden'); }
+            if (vista === 'login') { bottomNav.classList.add('hidden'); document.getElementById('header-title').innerText = "Login"; return; } else { bottomNav.classList.remove('hidden'); }
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const items = document.querySelectorAll('.nav-item');
-            
-            // Gestione indici per i 5 bottoni
             if(vista === 'frigo') items[0].classList.add('active');
             if(vista === 'scanner') items[1].classList.add('active');
             if(vista === 'spesa') items[2].classList.add('active');
             if(vista === 'ricette') items[3].classList.add('active');
             if(vista === 'regole') items[4].classList.add('active');
             
-            const titles = { 'frigo': 'Il Mio Frigo', 'scanner': 'Scannerizza', 'spesa': 'Lista Spesa', 'ricette': 'Ricette Svuota Frigo', 'regole': 'Guida & Regole' };
+            const titles = { 'frigo': 'Il Mio Frigo', 'scanner': 'Scannerizza', 'spesa': 'Lista Spesa', 'ricette': 'Lo Chef di Casa', 'regole': 'Guida & Regole' };
             document.getElementById('header-title').innerText = titles[vista];
 
-            if(vista === 'frigo') loadFrigo();
-            if(vista === 'spesa') loadCarrello();
-            
+            if(vista === 'frigo') loadFrigo(); if(vista === 'spesa') loadCarrello();
             if(vista === 'scanner') startScanner(); else stopScannerHard();
         }
 
-        /* --- RICETTE CON GESTIONE ERRORI --- */
+        /* --- RICETTE (INTELLIGENZA ARTIFICIALE) --- */
         async function getRicette() {
             const div = document.getElementById('lista-ricette');
-            div.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;"><span class="material-icons-round" style="animation: spin 1s linear infinite;">sync</span> Cerco ricette...</div>';
+            
+            // Animazione fighissima mentre pensa
+            div.innerHTML = `
+                <div style="text-align:center; padding:30px; color:#aaa;">
+                    <span class="material-icons-round" style="font-size: 40px; color: #ffb703; animation: spin 1s linear infinite;">autorenew</span>
+                    <p style="margin-top: 15px; font-style: italic;">Lo Chef sta inventando una ricetta per te...</p>
+                </div>`;
             
             try {
                 const res = await fetch('/api/ricette');
                 const data = await res.json();
                 
-                if (data.msg) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px;">${data.msg}</div>`;
-                    return;
-                }
-                
-                if (data.error) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">Impossibile contattare il server locale.</div>`;
-                    return;
+                // Se c'è un errore (es. chiave API sbagliata o non inserita su Render)
+                if (data.error) { 
+                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">⚠️ Errore AI: Assicurati che la chiave GEMINI_API_KEY sia corretta su Render.</div>`; 
+                    return; 
                 }
 
-                // Controllo se l'API blocca la chiave o la quota
-                if (data.status === "failure" || data.code === 401) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4b4b;">⚠️ Errore API Spoonacular: Riavvia il server su Render per fargli leggere la chiave!</div>`;
-                    return;
-                }
+                // Incolliamo l'HTML generato dal nostro Chef!
+                div.innerHTML = data.html;
 
-                if (!Array.isArray(data) || data.length === 0) {
-                    div.innerHTML = `<div style="text-align:center; padding:20px;">Nessuna ricetta trovata con gli ingredienti attuali.</div>`;
-                    return;
-                }
-
-                div.innerHTML = '';
-                data.forEach(r => {
-                    div.innerHTML += `
-                        <div class="recipe-card">
-                            <img src="${r.image}" alt="${r.title}">
-                            <div class="recipe-info">
-                                <h3>${r.title}</h3>
-                                <p>✅ Hai in frigo: <strong style="color:var(--success)">${r.usedIngredientCount}</strong> ingredienti</p>
-                                <p>❌ Ti mancano: <strong style="color:#ff4b4b">${r.missedIngredientCount}</strong> ingredienti</p>
-                            </div>
-                        </div>
-                    `;
-                });
             } catch (e) {
-                console.error(e);
-                div.innerHTML = '<div style="text-align:center; padding:20px; color:#ff4b4b;">Errore nel caricamento. Riprova.</div>';
+                div.innerHTML = '<div style="text-align:center; padding:20px; color:#ff4b4b;">Errore di connessione. Lo Chef è scappato! Riprova.</div>';
             }
         }
 
-        /* --- SCANNER "MILITARE" --- */
+        /* --- SCANNER --- */
         async function startScanner() {
-            document.getElementById('result-card').style.display = 'none';
-            document.getElementById('scan-status').innerText = "Avvio fotocamera...";
-            await stopScannerHard(); 
-            
+            document.getElementById('result-card').style.display = 'none'; document.getElementById('scan-status').innerText = "Avvio fotocamera..."; await stopScannerHard(); 
             html5QrCode = new Html5Qrcode("reader");
-            try {
-                await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess);
-                document.getElementById('scan-status').innerText = "Inquadra un codice a barre...";
-            } catch (err) {
-                document.getElementById('scan-status').innerText = "Errore: fotocamera bloccata.";
-            }
+            try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess); document.getElementById('scan-status').innerText = "Inquadra un codice a barre..."; } catch (err) { document.getElementById('scan-status').innerText = "Errore: fotocamera bloccata."; }
         }
-
-        async function stopScannerHard() {
-            if (html5QrCode) {
-                try { await html5QrCode.stop(); } catch (e) {}
-                try { html5QrCode.clear(); } catch (e) {}
-                html5QrCode = null;
-            }
-        }
-
+        async function stopScannerHard() { if (html5QrCode) { try { await html5QrCode.stop(); } catch (e) {} try { html5QrCode.clear(); } catch (e) {} html5QrCode = null; } }
         async function onScanSuccess(decodedText) {
-            document.getElementById('scan-status').innerText = "Codice letto! Fermo...";
-            await stopScannerHard(); 
-            document.getElementById('scan-status').innerText = "🔍 Cerco: " + decodedText + "...";
-            
+            document.getElementById('scan-status').innerText = "Codice letto! Fermo..."; await stopScannerHard(); document.getElementById('scan-status').innerText = "🔍 Cerco: " + decodedText + "...";
             try {
-                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
-                const data = await res.json();
-                if (data.status === 1) {
-                    const p = data.product;
-                    scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`.trim(), qta: p.quantity || "1 pz" };
-                    document.getElementById('result-name').innerText = scannedProduct.name;
-                    document.getElementById('result-img').src = p.image_front_small_url || "https://via.placeholder.com/100?text=No+Img";
-                    document.getElementById('scan-status').innerText = "Trovato! 🎉";
-                    document.getElementById('result-card').style.display = 'block';
-                } else {
-                    document.getElementById('scan-status').innerText = "❌ Non trovato. Riavvio...";
-                    setTimeout(() => startScanner(), 1500); 
-                }
-            } catch (e) { 
-                document.getElementById('scan-status').innerText = "⚠️ Errore di rete."; setTimeout(() => startScanner(), 1500); 
-            }
+                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`); const data = await res.json();
+                if (data.status === 1) { const p = data.product; scannedProduct = { name: `${p.product_name || "Sconosciuto"} ${p.brands || ""}`.trim(), qta: p.quantity || "1 pz" }; document.getElementById('result-name').innerText = scannedProduct.name; document.getElementById('result-img').src = p.image_front_small_url || "[https://via.placeholder.com/100?text=No+Img](https://via.placeholder.com/100?text=No+Img)"; document.getElementById('scan-status').innerText = "Trovato! 🎉"; document.getElementById('result-card').style.display = 'block'; } 
+                else { document.getElementById('scan-status').innerText = "❌ Non trovato. Riavvio..."; setTimeout(() => startScanner(), 1500); }
+            } catch (e) { document.getElementById('scan-status').innerText = "⚠️ Errore di rete."; setTimeout(() => startScanner(), 1500); }
         }
         function cancelScan() { startScanner(); }
 
         /* --- MODIFICA DOPO SCAN --- */
         function openScanEditModal(dest) {
-            scanDest = dest;
-            document.getElementById('scan-edit-nome').value = scannedProduct.name; document.getElementById('scan-edit-qta').value = scannedProduct.qta;
+            scanDest = dest; document.getElementById('scan-edit-nome').value = scannedProduct.name; document.getElementById('scan-edit-qta').value = scannedProduct.qta;
             const catContainer = document.getElementById('scan-edit-cat-container'), scadContainer = document.getElementById('scan-edit-scad-container'), confirmBtn = document.getElementById('scan-edit-btn-confirm'), title = document.getElementById('scan-edit-title');
             if (dest === 'frigo') { title.innerText = "Aggiungi al Frigo"; catContainer.style.display = 'block'; scadContainer.style.display = 'block'; document.getElementById('scan-edit-cat').value = 'altro'; const oggi = new Date(); oggi.setDate(oggi.getDate() + 7); document.getElementById('scan-edit-scad').value = oggi.toISOString().split('T')[0]; confirmBtn.innerText = "Salva in Frigo"; } 
             else { title.innerText = "Aggiungi alla Spesa"; catContainer.style.display = 'none'; scadContainer.style.display = 'none'; confirmBtn.innerText = "Salva in Spesa"; }
@@ -422,128 +308,46 @@
         }
         function closeScanEditModal() { document.getElementById('modal-scan-edit').style.display = 'none'; }
         async function confirmScanEdit() {
-            const nome = document.getElementById('scan-edit-nome').value, qta = document.getElementById('scan-edit-qta').value;
-            if(!nome) return;
+            const nome = document.getElementById('scan-edit-nome').value, qta = document.getElementById('scan-edit-qta').value; if(!nome) return;
             let payload = scanDest === 'frigo' ? { nome, quantita: qta, categoria: document.getElementById('scan-edit-cat').value, scadenza: document.getElementById('scan-edit-scad').value } : { nome, quantita: qta };
             await fetch(`${API}/${scanDest}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             closeScanEditModal(); document.getElementById('result-card').style.display = 'none'; nav(scanDest); 
         }
 
-        function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
-
         /* --- FRIGO --- */
+        function onSearch(val) { searchTerm = val.toLowerCase(); loadFrigo(); }
         function setFilter(tipo) { currentFilter = tipo; document.querySelectorAll('.chip').forEach(btn => btn.classList.remove('active')); document.getElementById('btn-' + tipo).classList.add('active'); loadFrigo(); }
-
         async function loadFrigo() {
-            const res = await fetch(`${API}/frigo`); allFrigoItems = await res.json();
-            let data = [...allFrigoItems]; const div = document.getElementById('lista-frigo'); div.innerHTML = ''; const oggi = new Date();
-            
+            const res = await fetch(`${API}/frigo`); allFrigoItems = await res.json(); let data = [...allFrigoItems]; const div = document.getElementById('lista-frigo'); div.innerHTML = ''; const oggi = new Date();
             if (searchTerm) data = data.filter(item => item.nome.toLowerCase().includes(searchTerm));
-            if (currentFilter === 'scadenza') { data = data.filter(item => { if (!item.scadenza) return false; const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24)); return diffDays <= 3; }); } 
-            else if (currentFilter === 'finiti') { data = data.filter(item => item.rimasto <= 20); }
-
-            if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Nessun prodotto trovato.</div>`; return; }
-            
+            if (currentFilter === 'scadenza') { data = data.filter(item => { if (!item.scadenza) return false; const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24)); return diffDays <= 3; }); } else if (currentFilter === 'finiti') { data = data.filter(item => item.rimasto <= 20); }
+            if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Nessun prodotto.</div>`; return; }
             data.forEach(item => {
                 let avvisoScadenza = '', borderStyle = '';
-                if (item.scadenza) {
-                    const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24));
-                    if (diffDays < 0) { avvisoScadenza = `<span class="urgent">SCADUTO!</span>`; borderStyle = 'border-left-color: #ff4b4b;'; }
-                    else if (diffDays <= 3) { avvisoScadenza = `<span class="urgent">Scade tra ${diffDays} gg</span>`; borderStyle = 'border-left-color: orange;'; }
-                    else { avvisoScadenza = `<span style="color:#aaa">Scad: ${item.scadenza}</span>`; borderStyle = 'border-left-color: #00d4b1;'; }
-                }
+                if (item.scadenza) { const diffDays = Math.ceil((new Date(item.scadenza) - oggi) / (1000 * 60 * 60 * 24)); if (diffDays < 0) { avvisoScadenza = `<span class="urgent">SCADUTO!</span>`; borderStyle = 'border-left-color: #ff4b4b;'; } else if (diffDays <= 3) { avvisoScadenza = `<span class="urgent">Scade tra ${diffDays} gg</span>`; borderStyle = 'border-left-color: orange;'; } else { avvisoScadenza = `<span style="color:#aaa">Scad: ${item.scadenza}</span>`; borderStyle = 'border-left-color: #00d4b1;'; } }
                 const colorBar = item.rimasto > 50 ? '#00d4b1' : '#ff4b4b', iconaCat = catIcons[item.categoria] || '📦';
-                
-                div.innerHTML += `
-                <div class="item" style="${borderStyle}">
-                    <div style="flex:1"><div class="item-info"><h3>${iconaCat} ${item.nome}</h3><p>${item.quantita} • ${avvisoScadenza}</p></div>
-                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
-                            <input type="range" id="slider-${item._id}" min="0" max="100" value="${item.rimasto}" oninput="onSliderDrag('${item._id}', this.value)" style="accent-color: ${colorBar}; background: linear-gradient(to right, ${colorBar} ${item.rimasto}%, #444 ${item.rimasto}%)">
-                            <span id="perc-text-${item._id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span>
-                            <button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">✅ Salva</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap: 5px;">
-                        <button onclick="openEditFrigoModal('${item._id}')" class="btn-icon" style="color:#a3a8b8; padding:6px;"><span class="material-icons-round" style="font-size: 20px;">edit</span></button>
-                        <button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="padding:6px;"><span class="material-icons-round" style="font-size: 20px;">delete</span></button>
-                    </div>
-                </div>`;
+                div.innerHTML += `<div class="item" style="${borderStyle}"><div style="flex:1"><div class="item-info"><h3>${iconaCat} ${item.nome}</h3><p>${item.quantita} • ${avvisoScadenza}</p></div><div style="display:flex;align-items:center;gap:10px;margin-top:8px"><input type="range" id="slider-${item._id}" min="0" max="100" value="${item.rimasto}" oninput="onSliderDrag('${item._id}', this.value)" style="accent-color: ${colorBar}; background: linear-gradient(to right, ${colorBar} ${item.rimasto}%, #444 ${item.rimasto}%)"><span id="perc-text-${item._id}" style="font-size:12px; min-width:35px; text-align:right; color: ${colorBar}; font-weight:bold;">${item.rimasto}%</span><button id="save-btn-${item._id}" onclick="confirmSliderUpdate('${item._id}')" class="btn-save-slider">✅ Salva</button></div></div><div style="display:flex; align-items:center; gap: 5px;"><button onclick="openEditFrigoModal('${item._id}')" class="btn-icon" style="color:#a3a8b8; padding:6px;"><span class="material-icons-round" style="font-size: 20px;">edit</span></button><button onclick="openModal('${item._id}', 'frigo')" class="btn-icon btn-delete" style="padding:6px;"><span class="material-icons-round" style="font-size: 20px;">delete</span></button></div></div>`;
             });
         }
-
-        function openEditFrigoModal(id) {
-            const item = allFrigoItems.find(i => i._id === id); if(!item) return; itemToEditId = id;
-            document.getElementById('edit-f-nome').value = item.nome || ''; document.getElementById('edit-f-qta').value = item.quantita || ''; document.getElementById('edit-f-cat').value = item.categoria || 'altro'; document.getElementById('edit-f-scad').value = item.scadenza || '';
-            document.getElementById('modal-edit-frigo').style.display = 'flex';
-        }
+        function openEditFrigoModal(id) { const item = allFrigoItems.find(i => i._id === id); if(!item) return; itemToEditId = id; document.getElementById('edit-f-nome').value = item.nome || ''; document.getElementById('edit-f-qta').value = item.quantita || ''; document.getElementById('edit-f-cat').value = item.categoria || 'altro'; document.getElementById('edit-f-scad').value = item.scadenza || ''; document.getElementById('modal-edit-frigo').style.display = 'flex'; }
         function closeEditFrigoModal() { document.getElementById('modal-edit-frigo').style.display = 'none'; }
-        async function confirmEditFrigo() {
-            const nome = document.getElementById('edit-f-nome').value, qta = document.getElementById('edit-f-qta').value, cat = document.getElementById('edit-f-cat').value, scad = document.getElementById('edit-f-scad').value;
-            if(!nome) return;
-            await fetch(`${API}/frigo/${itemToEditId}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, categoria: cat, scadenza: scad }) });
-            closeEditFrigoModal(); loadFrigo();
-        }
-        function onSliderDrag(id, val) {
-            const color = val > 50 ? '#00d4b1' : '#ff4b4b', slider = document.getElementById(`slider-${id}`);
-            slider.style.background = `linear-gradient(to right, ${color} ${val}%, #444 ${val}%)`; slider.style.accentColor = color;
-            const pt = document.getElementById(`perc-text-${id}`); pt.innerText = val + '%'; pt.style.color = color;
-            document.getElementById(`save-btn-${id}`).style.display = 'inline-block';
-        }
+        async function confirmEditFrigo() { const nome = document.getElementById('edit-f-nome').value, qta = document.getElementById('edit-f-qta').value, cat = document.getElementById('edit-f-cat').value, scad = document.getElementById('edit-f-scad').value; if(!nome) return; await fetch(`${API}/frigo/${itemToEditId}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, categoria: cat, scadenza: scad }) }); closeEditFrigoModal(); loadFrigo(); }
+        function onSliderDrag(id, val) { const color = val > 50 ? '#00d4b1' : '#ff4b4b', slider = document.getElementById(`slider-${id}`); slider.style.background = `linear-gradient(to right, ${color} ${val}%, #444 ${val}%)`; slider.style.accentColor = color; const pt = document.getElementById(`perc-text-${id}`); pt.innerText = val + '%'; pt.style.color = color; document.getElementById(`save-btn-${id}`).style.display = 'inline-block'; }
         async function confirmSliderUpdate(id) { await fetch(`${API}/frigo/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ rimasto: document.getElementById(`slider-${id}`).value }) }); document.getElementById(`save-btn-${id}`).style.display = 'none'; loadFrigo(); }
-        async function addFrigo() {
-            const nome = document.getElementById('f-nome').value, qta = document.getElementById('f-qta').value, scad = document.getElementById('f-scad').value, cat = document.getElementById('f-cat').value;
-            if(!nome) return;
-            await fetch(`${API}/frigo`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, scadenza: scad, categoria: cat }) });
-            document.getElementById('f-nome').value = ''; loadFrigo();
-        }
+        async function addFrigo() { const nome = document.getElementById('f-nome').value, qta = document.getElementById('f-qta').value, scad = document.getElementById('f-scad').value, cat = document.getElementById('f-cat').value; if(!nome) return; await fetch(`${API}/frigo`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: qta, scadenza: scad, categoria: cat }) }); document.getElementById('f-nome').value = ''; loadFrigo(); }
 
-        /* --- CARRELLO --- */
-        async function loadCarrello() {
-            const res = await fetch(`${API}/carrello`); const data = await res.json();
-            const div = document.getElementById('lista-carrello'); div.innerHTML = '';
-            if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Carrello vuoto.</div>`; return; }
-            data.forEach(item => {
-                const isP = item.preso, textDec = isP ? 'text-decoration: line-through; color: #666;' : '', iconCol = isP ? '#666' : '#00d4b1', iconName = isP ? 'undo' : 'check_circle';
-                div.innerHTML += `<div class="item" style="border-left: 3px solid ${iconCol}; opacity: ${isP ? '0.6' : '1'};"><div class="item-info" style="${textDec}"><h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p></div><div style="display:flex; gap:5px;"><button onclick="togglePreso('${item._id}', ${!isP})" class="btn-icon" style="color:${iconCol}"><span class="material-icons-round" style="font-size:26px;">${iconName}</span></button><button onclick="openModal('${item._id}', 'carrello')" class="btn-icon btn-delete" style="padding: 6px;"><span class="material-icons-round" style="font-size:18px;">delete</span></button></div></div>`;
-            });
-        }
+        /* --- CARRELLO E MODALI BASE --- */
+        async function loadCarrello() { const res = await fetch(`${API}/carrello`); const data = await res.json(); const div = document.getElementById('lista-carrello'); div.innerHTML = ''; if(data.length === 0) { div.innerHTML = `<div style="text-align:center; color:#555; margin-top:30px;">Carrello vuoto.</div>`; return; } data.forEach(item => { const isP = item.preso, textDec = isP ? 'text-decoration: line-through; color: #666;' : '', iconCol = isP ? '#666' : '#00d4b1', iconName = isP ? 'undo' : 'check_circle'; div.innerHTML += `<div class="item" style="border-left: 3px solid ${iconCol}; opacity: ${isP ? '0.6' : '1'};"><div class="item-info" style="${textDec}"><h3>${item.nome}</h3><p>Da prendere: ${item.quantita}</p></div><div style="display:flex; gap:5px;"><button onclick="togglePreso('${item._id}', ${!isP})" class="btn-icon" style="color:${iconCol}"><span class="material-icons-round" style="font-size:26px;">${iconName}</span></button><button onclick="openModal('${item._id}', 'carrello')" class="btn-icon btn-delete" style="padding: 6px;"><span class="material-icons-round" style="font-size:18px;">delete</span></button></div></div>`; }); }
         async function addCarrello() { const nome = document.getElementById('c-nome').value; if(!nome) return; await fetch(`${API}/carrello`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome, quantita: '1 pz' }) }); document.getElementById('c-nome').value = ''; loadCarrello(); }
         async function togglePreso(id, status) { await fetch(`${API}/carrello/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ preso: status }) }); loadCarrello(); }
-        async function askSvuotaAdvanced() {
-            const res = await fetch(`${API}/carrello`); const cart = await res.json(); itemsToTransfer = cart.filter(i => i.preso);
-            const modal = document.getElementById('modal-confirm'), btns = document.getElementById('modal-confirm-btns');
-            if (itemsToTransfer.length > 0) { document.getElementById('modal-title').innerText = "Spesa Finita!"; document.getElementById('modal-text').innerText = `Hai spuntato ${itemsToTransfer.length} prodotti. Spostarli nel frigo?`; btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel" style="flex:1;">Annulla</button><button onclick="executeSvuota(false)" class="btn-cancel" style="flex:1; border-color:#ff4b4b; color:#ff4b4b;">Solo Svuota</button><button onclick="openTransferModal()" class="btn-confirm" style="flex:1.5;">Sì, in Frigo</button>`;
-            } else { document.getElementById('modal-title').innerText = "Svuotare tutto?"; document.getElementById('modal-text').innerText = "Nessun prodotto spuntato. Cancellare la lista?"; btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel">Annulla</button><button onclick="executeSvuota(false)" class="btn-confirm" style="background:#ff4b4b;">Sì, Cancella</button>`; }
-            modal.style.display = 'flex';
-        }
+        async function askSvuotaAdvanced() { const res = await fetch(`${API}/carrello`); const cart = await res.json(); itemsToTransfer = cart.filter(i => i.preso); const modal = document.getElementById('modal-confirm'), btns = document.getElementById('modal-confirm-btns'); if (itemsToTransfer.length > 0) { document.getElementById('modal-title').innerText = "Spesa Finita!"; document.getElementById('modal-text').innerText = `Hai spuntato ${itemsToTransfer.length} prodotti. Spostarli nel frigo?`; btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel" style="flex:1;">Annulla</button><button onclick="executeSvuota(false)" class="btn-cancel" style="flex:1; border-color:#ff4b4b; color:#ff4b4b;">Solo Svuota</button><button onclick="openTransferModal()" class="btn-confirm" style="flex:1.5;">Sì, in Frigo</button>`; } else { document.getElementById('modal-title').innerText = "Svuotare tutto?"; document.getElementById('modal-text').innerText = "Nessun prodotto spuntato. Cancellare la lista?"; btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel">Annulla</button><button onclick="executeSvuota(false)" class="btn-confirm" style="background:#ff4b4b;">Sì, Cancella</button>`; } modal.style.display = 'flex'; }
         async function executeSvuota(withT) { closeModal(); if(!withT) { await fetch(`${API}/carrello`, { method: 'DELETE' }); loadCarrello(); } }
-        function openTransferModal() {
-            closeModal(); const listDiv = document.getElementById('transfer-list'); listDiv.innerHTML = '';
-            itemsToTransfer.forEach((item, i) => { listDiv.innerHTML += `<div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);"><strong style="display:block; margin-bottom:10px; color:#00d4b1; font-size:16px;">${item.nome}</strong><div style="display:flex; gap:8px; margin-bottom:8px;"><input type="text" id="trans-qta-${i}" value="${item.quantita}" style="width:40%; padding:10px; margin:0;" placeholder="Qtà"><select id="trans-cat-${i}" style="width:60%; padding:10px; margin:0;"><option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option></select></div><input type="date" id="trans-scad-${i}" style="padding:10px; margin:0; width:100%;"></div>`; });
-            document.getElementById('modal-transfer').style.display = 'flex';
-        }
+        function openTransferModal() { closeModal(); const listDiv = document.getElementById('transfer-list'); listDiv.innerHTML = ''; itemsToTransfer.forEach((item, i) => { listDiv.innerHTML += `<div style="text-align:left; background:rgba(255,255,255,0.05); padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);"><strong style="display:block; margin-bottom:10px; color:#00d4b1; font-size:16px;">${item.nome}</strong><div style="display:flex; gap:8px; margin-bottom:8px;"><input type="text" id="trans-qta-${i}" value="${item.quantita}" style="width:40%; padding:10px; margin:0;" placeholder="Qtà"><select id="trans-cat-${i}" style="width:60%; padding:10px; margin:0;"><option value="altro">📦 Altro</option><option value="carne">🥩 Carne</option><option value="pesce">🐟 Pesce</option><option value="verdura">🥦 Verdura</option><option value="frutta">🍎 Frutta</option><option value="latticini">🧀 Latticini</option><option value="bevande">🥤 Bevande</option></select></div><input type="date" id="trans-scad-${i}" style="padding:10px; margin:0; width:100%;"></div>`; }); document.getElementById('modal-transfer').style.display = 'flex'; }
         function closeTransferModal() { document.getElementById('modal-transfer').style.display = 'none'; }
-        async function confirmTransferAndEmpty() {
-            for(let i=0; i<itemsToTransfer.length; i++) {
-                const qta = document.getElementById(`trans-qta-${i}`).value, cat = document.getElementById(`trans-cat-${i}`).value, scad = document.getElementById(`trans-scad-${i}`).value;
-                await fetch(`${API}/frigo`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome: itemsToTransfer[i].nome, quantita: qta, categoria: cat, scadenza: scad }) });
-            }
-            await fetch(`${API}/carrello`, { method: 'DELETE' }); closeTransferModal(); nav('frigo');
-        }
-
-        /* --- MODALI BASE --- */
-        function openModal(id, type) {
-            itemToDeleteId = id; deleteType = type;
-            const modal = document.getElementById('modal-confirm'), btns = document.getElementById('modal-confirm-btns');
-            document.getElementById('modal-title').innerText="Eliminare?"; document.getElementById('modal-text').innerText="L'azione è irreversibile.";
-            btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel">No</button><button onclick="confirmAction()" class="btn-confirm" style="background:#ff4b4b;">Sì, Elimina</button>`; modal.style.display = 'flex';
-        }
+        async function confirmTransferAndEmpty() { for(let i=0; i<itemsToTransfer.length; i++) { const qta = document.getElementById(`trans-qta-${i}`).value, cat = document.getElementById(`trans-cat-${i}`).value, scad = document.getElementById(`trans-scad-${i}`).value; await fetch(`${API}/frigo`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ nome: itemsToTransfer[i].nome, quantita: qta, categoria: cat, scadenza: scad }) }); } await fetch(`${API}/carrello`, { method: 'DELETE' }); closeTransferModal(); nav('frigo'); }
+        function openModal(id, type) { itemToDeleteId = id; deleteType = type; const modal = document.getElementById('modal-confirm'), btns = document.getElementById('modal-confirm-btns'); document.getElementById('modal-title').innerText="Eliminare?"; document.getElementById('modal-text').innerText="L'azione è irreversibile."; btns.innerHTML = `<button onclick="closeModal()" class="btn-cancel">No</button><button onclick="confirmAction()" class="btn-confirm" style="background:#ff4b4b;">Sì, Elimina</button>`; modal.style.display = 'flex'; }
         function closeModal() { document.getElementById('modal-confirm').style.display = 'none'; }
-        async function confirmAction() {
-            if (deleteType === 'frigo') await fetch(`${API}/frigo/${itemToDeleteId}`, { method: 'DELETE' });
-            if (deleteType === 'carrello') await fetch(`${API}/carrello/${itemToDeleteId}`, { method: 'DELETE' });
-            closeModal(); if(deleteType === 'frigo') loadFrigo(); else loadCarrello();
-        }
+        async function confirmAction() { if (deleteType === 'frigo') await fetch(`${API}/frigo/${itemToDeleteId}`, { method: 'DELETE' }); if (deleteType === 'carrello') await fetch(`${API}/carrello/${itemToDeleteId}`, { method: 'DELETE' }); closeModal(); if(deleteType === 'frigo') loadFrigo(); else loadCarrello(); }
     </script>
 </body>
 </html>
