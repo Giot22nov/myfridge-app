@@ -52,7 +52,7 @@ app.get('/api/ricette', async (req, res) => {
         const listaIngredienti = prodotti.map(p => p.nome).join(', ');
         
         // Inizializziamo l'AI di Google
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Il modello super veloce
         
         // Questo è il PROMPT: Le istruzioni segrete per l'AI
