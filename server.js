@@ -1,13 +1,30 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const { GoogleGenerativeAI } = require('@google/generative-ai'); // <-- IL NUOVO PACCHETTO!
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 app.use(express.json());
+
+// ✅ @google/genai (ESM) usato da CommonJS tramite import dinamico
+let ai;
+
+async function getGenAIClient() {
+  if (ai) return ai;
+
+  const mod = await import("@google/genai");
+  const GoogleGenAI = mod.GoogleGenAI;
+
+  // Usa la variabile che hai già: GOOGLE_API_KEY (va bene)
+  ai = new GoogleGenAI({
+    apiKey: process.env.GOOGLE_API_KEY
+  });
+
+  return ai;
+}
 
 // --- CONNESSIONE DATABASE ---
 mongoose.connect(process.env.MONGO_URI)
@@ -52,12 +69,15 @@ app.get('/api/ricette', async (req, res) => {
         const listaIngredienti = prodotti.map(p => p.nome).join(', ');
         
         // Inizializziamo l'AI di Google
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Il modello super veloce
+        console.log("GOOGLE_API_KEY:", process.env.GOOGLE_API_KEY ? "✅ Presente" : "❌ Mancante");
+        console.log("🤖 Generating recipe with Gemini AI using ingredients:", listaIngredienti);
         
         // Questo è il PROMPT: Le istruzioni segrete per l'AI
         const prompt = `Sei un simpatico e geniale Chef italiano. Nel mio frigo ho a disposizione ESATTAMENTE questi ingredienti: ${listaIngredienti}. 
-        Inventa UNA ricetta gustosa e creativa usando il più possibile questi ingredienti. Puoi dare per scontato che io abbia in dispensa le cose base (sale, pepe, olio d'oliva, aglio, cipolla, burro).
+        Inventa UNA ricetta gustosa e creativa usando il più possibile questi ingredienti. Puoi dare per scontato che io abbia in dispensa le cose base (sale, pepe, olio d'oliva, aglio, cipolla, burro). 
+        Non è necessario usare tutti gli ingredienti, ma cerca di usarne il più possibile. 
+        La ricetta deve essere semplice, adatta a chi non è un cuoco esperto, e deve includere una lista di ingredienti con quantità stimate e un procedimento passo-passo. 
+        
         
         IMPORTANTE: Rispondi SOLO ed ESCLUSIVAMENTE con codice HTML puro (non usare i backtick \`\`\`html). 
         Usa questa struttura esatta per la risposta:
@@ -76,8 +96,20 @@ app.get('/api/ricette', async (req, res) => {
         </div>`;
         
         // Chiediamo a Gemini di generare la ricetta
-        const result = await model.generateContent(prompt);
-        let text = result.response.text();
+        const ai = new GoogleGenAI({
+            apiKey: process.env.GEMINI_API_KEY
+        });
+        const client = await getGenAIClient();
+
+        const response = await client.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt
+            });
+
+        let text = response.text;
+
+        //const result = await ai.modelsmodel.generateContent(prompt);
+        //let text = result.response.text();
         
         // Pulizia di sicurezza nel caso l'AI metta i tag "```html"
         text = text.replace(/```html/g, '').replace(/```/g, '').trim();
