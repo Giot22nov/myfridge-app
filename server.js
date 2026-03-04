@@ -69,7 +69,7 @@ app.get('/api/ricette', async (req, res) => {
         const listaIngredienti = prodotti.map(p => p.nome).join(', ');
         
         // Inizializziamo l'AI di Google
-        console.log("GOOGLE_API_KEY:", process.env.GOOGLE_API_KEY ? "✅ Presente" : "❌ Mancante");
+        console.log("GOOGLE_API_KEY:", process.env.GEMINI_API_KEY ? "✅ Presente" : "❌ Mancante");
         console.log("🤖 Generating recipe with Gemini AI using ingredients:", listaIngredienti);
         
         // Questo è il PROMPT: Le istruzioni segrete per l'AI
